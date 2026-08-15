@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RianShop - Top-Up & Digital Store</title>
+    <title>RianShop - Store Otomatis & Top-Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,12 +52,104 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-        <h2 class="text-lg font-bold text-white mb-6"><i class="fa-solid fa-fire text-indigo-400"></i> Katalog Produk</h2>
-        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-            <div class="col-span-full py-12 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Memuat produk...</p></div>
+        <!-- Navigation Menu Store Otomatis H2H -->
+        <div class="flex flex-wrap gap-2 mb-8 justify-center">
+            <button onclick="switchTab('katalog')" id="tab-katalog" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-lg transition"><i class="fa-solid fa-store mr-1.5"></i> Katalog</button>
+            <button onclick="switchTab('prabayar')" id="tab-prabayar" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-mobile-screen mr-1.5"></i> Prabayar</button>
+            <button onclick="switchTab('pascabayar')" id="tab-pascabayar" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Pascabayar</button>
+            <button onclick="switchTab('transfer')" id="tab-transfer" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-money-bill-transfer mr-1.5"></i> Transfer Bank</button>
+            <button onclick="switchTab('deposit')" id="tab-deposit" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-wallet mr-1.5"></i> Deposit</button>
         </div>
+
+        <!-- 1. TAB KATALOG -->
+        <div id="section-katalog" class="tab-section">
+            <h2 class="text-lg font-bold text-white mb-6"><i class="fa-solid fa-fire text-indigo-400"></i> Katalog Produk RianShop</h2>
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                <div class="col-span-full py-12 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Memuat produk...</p></div>
+            </div>
+        </div>
+
+        <!-- 2. TAB PRABAYAR (ATLANTIC H2H) -->
+        <div id="section-prabayar" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
+            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-mobile-screen text-indigo-400"></i> Isi Pulsa, Data & Game (Atlantic H2H)</h2>
+            <form onsubmit="handlePrabayarTrx(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kode Produk / Layanan</label>
+                    <input type="text" id="prabayarCode" placeholder="Contoh: TSEL10 / ML86" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor HP / ID Target</label>
+                    <input type="text" id="prabayarTarget" placeholder="Contoh: 081234567890" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor WhatsApp Pengirim Notifikasi</label>
+                    <input type="number" id="prabayarWa" placeholder="081234567890" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl">Beli Sekarang</button>
+            </form>
+        </div>
+
+        <!-- 3. TAB PASCABAYAR (ATLANTIC H2H) -->
+        <div id="section-pascabayar" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
+            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Cek Tagihan Pascabayar</h2>
+            <form onsubmit="handlePascabayarCek(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kode Produk (PLNPOST/BPJS/PDAM)</label>
+                    <input type="text" id="pascaCode" placeholder="Contoh: PLNPOST" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">ID Pelanggan / Nomor Tagihan</label>
+                    <input type="text" id="pascaTarget" placeholder="Masukkan ID Pelanggan" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl">Cek Tagihan</button>
+            </form>
+            <div id="pascaResult" class="mt-4 p-4 bg-slate-900 rounded-xl hidden text-xs space-y-2"></div>
+        </div>
+
+        <!-- 4. TAB TRANSFER BANK (ATLANTIC H2H) -->
+        <div id="section-transfer" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
+            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-money-bill-transfer text-indigo-400"></i> Kirim Uang / Transfer Bank</h2>
+            <form onsubmit="handleTransferTrx(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kode Bank Target</label>
+                    <input type="text" id="trfBankCode" placeholder="Contoh: BCA / BRI / MANDIRI" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor Rekening Tujuan</label>
+                    <input type="text" id="trfAccount" placeholder="Nomor Rekening" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nominal Transfer (Rp)</label>
+                    <input type="number" id="trfAmount" placeholder="Nominal" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor WhatsApp Pengirim</label>
+                    <input type="number" id="trfWa" placeholder="081234567890" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl">Proses Transfer</button>
+            </form>
+        </div>
+
+        <!-- 5. TAB DEPOSIT SALDO (ATLANTIC H2H) -->
+        <div id="section-deposit" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
+            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-wallet text-indigo-400"></i> Deposit Saldo Otomatis</h2>
+            <form onsubmit="handleDepositTrx(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nominal Deposit (Rp)</label>
+                    <input type="number" id="depNominal" placeholder="Minimal 10000" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Metode Pembayaran (QRIS / BANK)</label>
+                    <input type="text" id="depMethod" placeholder="QRIS / BCA / MANDIRI" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl">Buat Tiket Deposit</button>
+            </form>
+            <div id="depositResult" class="mt-4 p-4 bg-slate-900 rounded-xl hidden text-xs"></div>
+        </div>
+
     </main>
 
+    <!-- Modal Drawer Keranjang Belanja -->
     <div id="cartModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex justify-end">
         <div class="glass-card w-full max-w-md h-full p-6 flex flex-col justify-between border-l border-slate-800">
             <div>
@@ -83,11 +175,39 @@
     </div>
 
     <script>
-        let products = [], cart = [];
+        let products = [];
+        let cart = [];
         const bgMusic = document.getElementById('bgMusic');
         const musicToggleBtn = document.getElementById('musicToggleBtn');
         const musicIcon = document.getElementById('musicIcon');
         let isPlaying = false;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-section').forEach(function(el) { el.classList.add('hidden'); });
+            document.querySelectorAll('[id^="tab-"]').forEach(function(el) {
+                el.classList.remove('bg-indigo-600', 'text-white');
+                el.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            const sec = document.getElementById('section-' + tabName);
+            if (sec) sec.classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-' + tabName);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+                activeBtn.classList.add('bg-indigo-600', 'text-white');
+            }
+        }
+
+        async function loadMusicConfig() {
+            try {
+                const res = await fetch('/api/settings/public');
+                const config = await res.json();
+                if (config.bg_music) {
+                    bgMusic.src = config.bg_music;
+                    bgMusic.load();
+                }
+            } catch (e) {}
+        }
 
         function toggleMusic() {
             if (isPlaying) {
@@ -96,22 +216,23 @@
                 musicToggleBtn.classList.remove("bg-indigo-600");
                 isPlaying = false;
             } else {
-                bgMusic.play().then(() => {
+                bgMusic.play().then(function() {
                     musicIcon.className = "fa-solid fa-compact-disc fa-spin text-xs text-white";
                     musicToggleBtn.classList.add("bg-indigo-600");
                     isPlaying = true;
                 });
             }
         }
+
         function changeVolume(val) { bgMusic.volume = val; }
 
         async function renderProducts() {
             const grid = document.getElementById('productGrid');
             try {
-                const res = await fetch(`/api/products`);
+                const res = await fetch('/api/products');
                 products = await res.json();
                 grid.innerHTML = '';
-                products.forEach(p => {
+                products.forEach(function(p) {
                     const isOutOfStock = p.stock <= 0;
                     const imgTag = p.image 
                         ? `<img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-xl mb-3">`
@@ -131,25 +252,101 @@
                         </div>
                     `;
                 });
-            } catch (e) { grid.innerHTML = `<div class="col-span-full text-center text-red-400 py-6">Gagal memuat produk.</div>`; }
+            } catch (e) { 
+                grid.innerHTML = '<div class="col-span-full text-center text-red-400 py-6">Gagal memuat produk.</div>'; 
+            }
+        }
+
+        async function handlePrabayarTrx(e) {
+            e.preventDefault();
+            const code = document.getElementById('prabayarCode').value;
+            const target = document.getElementById('prabayarTarget').value;
+            const phone = document.getElementById('prabayarWa').value;
+
+            try {
+                const res = await fetch('/api/atlantic/prabayar/transaksi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, target: target, phone: phone })
+                });
+                const data = await res.json();
+                alert(data.message || (data.success ? "Transaksi Prabayar Diproses!" : "Gagal"));
+            } catch(err) { alert("Gagal koneksi server."); }
+        }
+
+        async function handlePascabayarCek(e) {
+            e.preventDefault();
+            const code = document.getElementById('pascaCode').value;
+            const target = document.getElementById('pascaTarget').value;
+
+            try {
+                const res = await fetch('/api/atlantic/pascabayar/cek', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, target: target })
+                });
+                const data = await res.json();
+                const div = document.getElementById('pascaResult');
+                div.classList.remove('hidden');
+                div.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch(err) { alert("Gagal koneksi server."); }
+        }
+
+        async function handleTransferTrx(e) {
+            e.preventDefault();
+            const bank_code = document.getElementById('trfBankCode').value;
+            const account_no = document.getElementById('trfAccount').value;
+            const amount = Number(document.getElementById('trfAmount').value);
+            const phone = document.getElementById('trfWa').value;
+
+            try {
+                const res = await fetch('/api/atlantic/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bank_code: bank_code, account_no: account_no, amount: amount, phone: phone })
+                });
+                const data = await res.json();
+                alert(data.message || (data.success ? "Transfer Diproses!" : "Gagal"));
+            } catch(err) { alert("Gagal koneksi server."); }
+        }
+
+        async function handleDepositTrx(e) {
+            e.preventDefault();
+            const nominal = Number(document.getElementById('depNominal').value);
+            const method = document.getElementById('depMethod').value;
+
+            try {
+                const res = await fetch('/api/atlantic/deposit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nominal: nominal, method: method })
+                });
+                const data = await res.json();
+                const div = document.getElementById('depositResult');
+                div.classList.remove('hidden');
+                div.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch(err) { alert("Gagal koneksi server."); }
         }
 
         function addToCart(id) {
-            const product = products.find(p => p.id === id);
-            const item = cart.find(i => i.id === id);
+            const product = products.find(function(p) { return p.id === id; });
+            const item = cart.find(function(i) { return i.id === id; });
             if (item) {
                 if (item.qty >= product.stock) return alert("Melebihi stok.");
                 item.qty++;
-            } else cart.push({ ...product, qty: 1 });
+            } else {
+                cart.push({ id: product.id, name: product.name, price: product.price, stock: product.stock, qty: 1 });
+            }
             updateCart();
             document.getElementById('cartModal').classList.remove('hidden');
         }
 
         function updateCart() {
             const cartItems = document.getElementById('cartItems');
-            let total = 0, count = 0;
+            let total = 0;
+            let count = 0;
             cartItems.innerHTML = '';
-            cart.forEach(item => {
+            cart.forEach(function(item) {
                 total += item.price * item.qty;
                 count += item.qty;
                 cartItems.innerHTML += `
@@ -171,10 +368,12 @@
         }
 
         function changeQty(id, delta) {
-            const item = cart.find(i => i.id === id);
+            const item = cart.find(function(i) { return i.id === id; });
             if (item) {
                 item.qty += delta;
-                if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+                if (item.qty <= 0) {
+                    cart = cart.filter(function(i) { return i.id !== id; });
+                }
             }
             updateCart();
         }
@@ -189,23 +388,33 @@
             payBtn.disabled = true;
 
             try {
-                const response = await fetch(`/api/create-transaction`, {
+                const response = await fetch('/api/create-transaction', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cart, phone })
+                    body: JSON.stringify({ cart: cart, phone: phone })
                 });
 
                 const data = await response.json();
                 if (data.success && data.payment_url) {
                     window.location.href = data.payment_url;
-                } else alert(data.message || "Gagal membuat transaksi.");
+                } else {
+                    alert(data.message || "Gagal membuat transaksi.");
+                }
             } catch (err) { alert("Gagal koneksi server."); }
-            finally { payBtn.innerText = "Bayar Sekarang (Casaku)"; payBtn.disabled = false; }
+            finally { 
+                payBtn.innerText = "Bayar Sekarang (Casaku)"; 
+                payBtn.disabled = false; 
+            }
         }
 
-        document.getElementById('cartBtn').addEventListener('click', () => document.getElementById('cartModal').classList.remove('hidden'));
-        document.getElementById('closeCartBtn').addEventListener('click', () => document.getElementById('cartModal').classList.add('hidden'));
+        document.getElementById('cartBtn').addEventListener('click', function() {
+            document.getElementById('cartModal').classList.remove('hidden');
+        });
+        document.getElementById('closeCartBtn').addEventListener('click', function() {
+            document.getElementById('cartModal').classList.add('hidden');
+        });
 
+        loadMusicConfig();
         renderProducts();
     </script>
 </body>
