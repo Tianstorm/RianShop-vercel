@@ -9,39 +9,42 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
+    <!-- Screen Login Admin -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4">
-        <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-md">
+        <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
             <h2 class="text-2xl font-bold text-center text-indigo-400 mb-6">Login Admin RianShop</h2>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm mb-1">Username</label>
-                    <input type="text" id="adminUser" required class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg">
+                    <input type="text" id="adminUser" required class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
                 </div>
                 <div>
                     <label class="block text-sm mb-1">Password</label>
-                    <input type="password" id="adminPass" required class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg">
+                    <input type="password" id="adminPass" required class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-2 rounded-lg">Login</button>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-2 rounded-lg text-white">Login</button>
             </form>
         </div>
     </div>
 
+    <!-- Dashboard Main -->
     <div id="adminDashboard" class="hidden min-h-screen flex flex-col">
-        <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between">
-            <h1 class="text-xl font-bold text-indigo-400">Admin Dashboard RianShop</h1>
-            <button onclick="logout()" class="bg-red-600/20 text-red-400 px-4 py-1.5 rounded-lg text-sm">Logout</button>
+        <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-indigo-400"><i class="fa-solid fa-user-gear"></i> Admin Dashboard RianShop</h1>
+            <button onclick="logout()" class="bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-4 py-1.5 rounded-lg text-sm transition">Logout</button>
         </header>
 
         <div class="p-6 max-w-7xl mx-auto w-full space-y-8">
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4">
+            <!-- Manajemen Produk -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
                 <div class="flex justify-between items-center">
                     <h3 class="text-lg font-bold">Manajemen Produk & Stok</h3>
-                    <button onclick="openAddModal()" class="bg-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold">+ Tambah Produk</button>
+                    <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-semibold text-white transition">+ Tambah Produk</button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="bg-slate-900 text-slate-400 text-sm">
+                            <tr class="bg-slate-900 text-slate-400 text-sm border-b border-slate-700">
                                 <th class="p-3">Gambar</th>
                                 <th class="p-3">Nama</th>
                                 <th class="p-3">Harga</th>
@@ -54,18 +57,49 @@
                 </div>
             </div>
 
-            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4">
-                <h3 class="text-lg font-bold">Setting Casaku API</h3>
+            <!-- Setting API Key Atlantic H2H -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-server text-indigo-400 text-xl"></i>
+                    <div>
+                        <h3 class="text-lg font-bold">Pengaturan API Key Atlantic H2H</h3>
+                        <p class="text-xs text-slate-400">Endpoint API Gateway: <code class="bg-slate-900 px-2 py-0.5 rounded text-indigo-300">https://atlantich2h.com/api</code></p>
+                    </div>
+                </div>
+                <form onsubmit="saveAtlanticKey(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">API Key Atlantic H2H</label>
+                        <input type="text" id="cfgAtlanticKey" required placeholder="Masukkan API Key dari atlantich2h.com/api" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 rounded-xl font-bold text-white text-sm transition">Simpan API Key Atlantic</button>
+                </form>
+            </div>
+
+            <!-- Form Musik Background -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
+                <h3 class="text-lg font-bold"><i class="fa-solid fa-music text-indigo-400"></i> Pengaturan Musik Latar Belakang</h3>
+                <form onsubmit="saveMusicSetting(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm mb-1 text-slate-300">URL Direct File Musik (.mp3)</label>
+                        <input type="url" id="cfgMusicUrl" required placeholder="https://domain.com/music.mp3" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-2 rounded-lg font-bold text-white transition">Simpan Musik</button>
+                </form>
+            </div>
+
+            <!-- Setting Casaku API -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
+                <h3 class="text-lg font-bold"><i class="fa-solid fa-key text-indigo-400"></i> Pengaturan Payment Casaku</h3>
                 <form onsubmit="saveCasaku(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm mb-1">Merchant ID</label>
-                        <input type="text" id="cfgMerchantId" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded">
+                        <label class="block text-sm mb-1">Merchant ID Casaku</label>
+                        <input type="text" id="cfgMerchantId" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm mb-1">API Key</label>
-                        <input type="text" id="cfgApiKey" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded">
+                        <label class="block text-sm mb-1">API Key Casaku</label>
+                        <input type="text" id="cfgApiKey" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm">
                     </div>
-                    <button type="submit" class="bg-emerald-600 px-6 py-2 rounded-lg font-bold md:col-span-2">Simpan Setting</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-2 rounded-lg font-bold md:col-span-2 text-white transition">Simpan Setting Casaku</button>
                 </form>
             </div>
         </div>
@@ -73,30 +107,29 @@
 
     <!-- Modal Form Produk -->
     <div id="productModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-md">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl">
             <h3 class="text-lg font-bold mb-4" id="modalTitle">Tambah Produk</h3>
             <form onsubmit="saveProduct(event)" class="space-y-3">
                 <input type="hidden" id="prodId">
                 <div>
-                    <label class="block text-xs mb-1">Nama Produk</label>
-                    <input type="text" id="prodName" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm">
+                    <label class="block text-xs mb-1 text-slate-300">Nama Produk</label>
+                    <input type="text" id="prodName" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white">
                 </div>
                 <div>
-                    <label class="block text-xs mb-1">Harga (Rp)</label>
-                    <input type="number" id="prodPrice" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm">
+                    <label class="block text-xs mb-1 text-slate-300">Harga (Rp)</label>
+                    <input type="number" id="prodPrice" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white">
                 </div>
                 <div>
-                    <label class="block text-xs mb-1">Stok</label>
-                    <input type="number" id="prodStock" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm">
+                    <label class="block text-xs mb-1 text-slate-300">Stok</label>
+                    <input type="number" id="prodStock" required class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white">
                 </div>
                 <div>
-                    <label class="block text-xs mb-1">URL Gambar Produk (Opsional)</label>
-                    <input type="url" id="prodImage" placeholder="https://domain.com/gambar.jpg" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm">
-                    <p class="text-[10px] text-slate-400 mt-1">*Masukkan direct link gambar dari Imgur / PostImages / Google Drive.</p>
+                    <label class="block text-xs mb-1 text-slate-300">URL Gambar Produk (Opsional)</label>
+                    <input type="url" id="prodImage" placeholder="https://domain.com/gambar.jpg" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white">
                 </div>
                 <div class="flex justify-end gap-2 pt-3">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-700 rounded text-xs">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 rounded text-xs font-bold">Simpan</button>
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-700 rounded text-xs text-white">Batal</button>
+                    <button type="submit" id="saveBtn" class="px-4 py-2 bg-indigo-600 rounded text-xs font-bold text-white transition">Simpan</button>
                 </div>
             </form>
         </div>
@@ -111,48 +144,56 @@
             const res = await fetch(`/api/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: document.getElementById('adminUser').value, password: document.getElementById('adminPass').value })
+                body: JSON.stringify({ 
+                    username: document.getElementById('adminUser').value, 
+                    password: document.getElementById('adminPass').value 
+                })
             });
             const data = await res.json();
             if (data.success) {
                 token = data.token;
                 localStorage.setItem('adminToken', token);
                 loadDashboard();
-            } else alert("Login Gagal!");
+            } else alert(data.message || "Login Gagal!");
         }
 
-        function logout() { localStorage.removeItem('adminToken'); location.reload(); }
+        function logout() { 
+            localStorage.removeItem('adminToken'); 
+            location.reload(); 
+        }
 
         function loadDashboard() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminDashboard').classList.remove('hidden');
             fetchProducts();
-            fetchCasaku();
+            fetchSettings();
         }
 
         async function fetchProducts() {
-            const res = await fetch(`/api/products`);
-            const products = await res.json();
-            const tbody = document.getElementById('productTableBody');
-            tbody.innerHTML = '';
-            products.forEach(p => {
-                const imgThumb = p.image 
-                    ? `<img src="${p.image}" class="w-10 h-10 object-cover rounded border border-slate-700">`
-                    : `<span class="text-xs text-slate-500">Tanpa Foto</span>`;
+            try {
+                const res = await fetch(`/api/products`);
+                const products = await res.json();
+                const tbody = document.getElementById('productTableBody');
+                tbody.innerHTML = '';
+                products.forEach(p => {
+                    const imgThumb = p.image 
+                        ? `<img src="${p.image}" class="w-10 h-10 object-cover rounded border border-slate-700">`
+                        : `<span class="text-xs text-slate-500">Tanpa Foto</span>`;
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-3">${imgThumb}</td>
-                        <td class="p-3 font-medium">${p.name}</td>
-                        <td class="p-3">Rp ${p.price.toLocaleString('id-ID')}</td>
-                        <td class="p-3">${p.stock}</td>
-                        <td class="p-3 space-x-2">
-                            <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, ${p.stock}, '${p.image || ''}')" class="text-indigo-400"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button onclick="deleteProduct(${p.id})" class="text-red-400"><i class="fa-solid fa-trash"></i> Hapus</button>
-                        </td>
-                    </tr>
-                `;
-            });
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="p-3">${imgThumb}</td>
+                            <td class="p-3 font-medium">${p.name}</td>
+                            <td class="p-3">Rp ${p.price.toLocaleString('id-ID')}</td>
+                            <td class="p-3">${p.stock}</td>
+                            <td class="p-3 space-x-2">
+                                <button onclick="editProduct(${p.id}, '${p.name}', ${p.price}, ${p.stock}, '${p.image || ''}')" class="text-indigo-400 hover:underline"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button onclick="deleteProduct(${p.id})" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {}
         }
 
         function openAddModal() {
@@ -179,46 +220,95 @@
 
         async function saveProduct(e) {
             e.preventDefault();
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.innerText = "Menyimpan...";
+            saveBtn.disabled = true;
+
             const id = document.getElementById('prodId').value;
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/admin/products/${id}` : `/api/admin/products`;
 
-            await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    name: document.getElementById('prodName').value,
-                    price: Number(document.getElementById('prodPrice').value),
-                    stock: Number(document.getElementById('prodStock').value),
-                    image: document.getElementById('prodImage').value
-                })
-            });
-            closeModal();
-            fetchProducts();
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        name: document.getElementById('prodName').value,
+                        price: Number(document.getElementById('prodPrice').value),
+                        stock: Number(document.getElementById('prodStock').value),
+                        image: document.getElementById('prodImage').value
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    closeModal();
+                    fetchProducts();
+                } else alert("Gagal menyimpan: " + (data.message || "Error"));
+            } catch (err) { alert("Gagal terhubung ke server."); }
+            finally {
+                saveBtn.innerText = "Simpan";
+                saveBtn.disabled = false;
+            }
         }
 
         async function deleteProduct(id) {
             if (!confirm("Hapus produk ini?")) return;
-            await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            await fetch(`/api/admin/products/${id}`, { 
+                method: 'DELETE', 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
             fetchProducts();
         }
 
-        async function fetchCasaku() {
-            const res = await fetch(`/api/admin/settings`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const s = await res.json();
-            document.getElementById('cfgMerchantId').value = s.merchant_id || '';
-            document.getElementById('cfgApiKey').value = s.api_key || '';
+        async function fetchSettings() {
+            try {
+                const res = await fetch(`/api/admin/settings`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const s = await res.json();
+                document.getElementById('cfgMerchantId').value = s.merchant_id || '';
+                document.getElementById('cfgApiKey').value = s.api_key || '';
+                document.getElementById('cfgMusicUrl').value = s.bg_music || '';
+                document.getElementById('cfgAtlanticKey').value = s.atlantic_key || '';
+            } catch (e) {}
+        }
+
+        async function saveAtlanticKey(e) {
+            e.preventDefault();
+            const atlantic_key = document.getElementById('cfgAtlanticKey').value;
+            const res = await fetch(`/api/admin/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ atlantic_key })
+            });
+            const data = await res.json();
+            alert(data.message || "API Key Atlantic H2H berhasil disimpan!");
+        }
+
+        async function saveMusicSetting(e) {
+            e.preventDefault();
+            const bg_music = document.getElementById('cfgMusicUrl').value;
+            const res = await fetch(`/api/admin/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ bg_music })
+            });
+            const data = await res.json();
+            alert(data.message || "Musik berhasil diperbarui!");
         }
 
         async function saveCasaku(e) {
             e.preventDefault();
-            await fetch(`/api/admin/settings`, {
+            const res = await fetch(`/api/admin/settings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ merchant_id: document.getElementById('cfgMerchantId').value, api_key: document.getElementById('cfgApiKey').value })
+                body: JSON.stringify({ 
+                    merchant_id: document.getElementById('cfgMerchantId').value, 
+                    api_key: document.getElementById('cfgApiKey').value 
+                })
             });
-            alert("Tersimpan!");
+            const data = await res.json();
+            alert(data.message || "Setting Casaku tersimpan!");
         }
     </script>
 </body>
-  </html>
+</html>
