@@ -8,6 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// BASE URL API ATLANTIC H2H
 const ATLANTIC_BASE_URL = "https://atlantich2h.com/api";
 
 // -------------------------------------------------------------
@@ -76,6 +77,19 @@ const authenticateAdmin = (req, res, next) => {
     } catch (e) { res.status(403).json({ message: "Sesi login kadaluarsa" }); }
 };
 
+// Helper Request Form-Data ke Atlantic H2H
+async function postAtlantic(endpoint, params) {
+    const searchParams = new URLSearchParams();
+    for (const key in params) {
+        if (params[key] !== undefined && params[key] !== null) {
+            searchParams.append(key, params[key]);
+        }
+    }
+    return await axios.post(`${ATLANTIC_BASE_URL}${endpoint}`, searchParams, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+}
+
 // -------------------------------------------------------------
 // PUBLIC & ATLANTIC H2H ENDPOINTS
 // -------------------------------------------------------------
@@ -85,28 +99,33 @@ app.get('/api/settings/public', async (req, res) => {
     res.json({ bg_music: config.bg_music || '' });
 });
 
+// Cek Profile / Saldo Atlantic H2H
 app.get('/api/atlantic/profile', async (req, res) => {
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
     try {
-        const response = await axios.post(`${ATLANTIC_BASE_URL}/get-profile`, { api_key: apiKey });
+        const response = await postAtlantic('/get-profile', { api_key: apiKey });
         res.json(response.data);
     } catch (err) {
-        res.status(500).json({ status: false, message: "Gagal menghubungkan ke Atlantic H2H API" });
+        const errMsg = err.response?.data?.message || err.message;
+        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
     }
 });
 
+// Layanan Prabayar Atlantic H2H
 app.post('/api/atlantic/prabayar/layanan', async (req, res) => {
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
     try {
-        const response = await axios.post(`${ATLANTIC_BASE_URL}/layanan/prabayar`, { api_key: apiKey });
+        const response = await postAtlantic('/layanan/prabayar', { api_key: apiKey });
         res.json(response.data);
     } catch (err) {
-        res.status(500).json({ status: false, message: "Gagal mengambil data layanan Atlantic H2H" });
+        const errMsg = err.response?.data?.message || err.message;
+        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
     }
 });
 
+// Transaksi Prabayar (Pulsa/Data/Game) via Atlantic H2H
 app.post('/api/atlantic/prabayar/transaksi', async (req, res) => {
     const { code, target, phone } = req.body;
     const config = await getSettings();
@@ -114,36 +133,48 @@ app.post('/api/atlantic/prabayar/transaksi', async (req, res) => {
     const reffId = "REF-" + Date.now();
 
     try {
-        const response = await axios.post(`${ATLANTIC_BASE_URL}/transaksi/create`, {
-            api_key: apiKey, code, target, reff_id: reffId
+        const response = await postAtlantic('/transaksi/create', {
+            api_key: apiKey,
+            code: code,
+            target: target,
+            reff_id: reffId
         });
 
         if (response.data && response.data.status) {
             await queryTurso(
                 "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
-                [reffId, phone, `Prabayar: ${code} ke ${target}`, response.data.data.price || 0, 'PENDING']
+                [reffId, phone, `Prabayar: ${code} ke ${target}`, response.data.data?.price || 0, 'PENDING']
             );
             res.json({ success: true, data: response.data.data });
         } else {
-            res.status(400).json({ success: false, message: response.data.message || "Transaksi H2H Gagal" });
+            res.status(400).json({ success: false, message: response.data?.message || "Transaksi H2H Gagal" });
         }
     } catch (err) {
-        res.status(500).json({ success: false, message: "Gagal terhubung ke Atlantic H2H" });
+        const errMsg = err.response?.data?.message || err.message;
+        res.status(500).json({ success: false, message: `Atlantic: ${errMsg}` });
     }
 });
 
+// Cek Tagihan Pascabayar (PLN/BPJS/PDAM) via Atlantic H2H
 app.post('/api/atlantic/pascabayar/cek', async (req, res) => {
     const { code, target } = req.body;
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
+
     try {
-        const response = await axios.post(`${ATLANTIC_BASE_URL}/pascabayar/cek`, { api_key: apiKey, code, target });
+        const response = await postAtlantic('/pascabayar/cek', {
+            api_key: apiKey,
+            code: code,
+            target: target
+        });
         res.json(response.data);
     } catch (err) {
-        res.status(500).json({ status: false, message: "Gagal mengecek tagihan pascabayar" });
+        const errMsg = err.response?.data?.message || err.message;
+        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
     }
 });
 
+// Transfer Bank via Atlantic H2H
 app.post('/api/atlantic/transfer', async (req, res) => {
     const { bank_code, account_no, amount, phone } = req.body;
     const config = await getSettings();
@@ -151,8 +182,12 @@ app.post('/api/atlantic/transfer', async (req, res) => {
     const reffId = "TRF-" + Date.now();
 
     try {
-        const response = await axios.post(`${ATLANTIC_BASE_URL}/transfer/create`, {
-            api_key: apiKey, bank_code, account_no, amount, reff_id: reffId
+        const response = await postAtlantic('/transfer/create', {
+            api_key: apiKey,
+            bank_code: bank_code,
+            account_no: account_no,
+            amount: amount,
+            reff_id: reffId
         });
 
         if (response.data && response.data.status) {
@@ -162,28 +197,34 @@ app.post('/api/atlantic/transfer', async (req, res) => {
             );
             res.json({ success: true, data: response.data.data });
         } else {
-            res.status(400).json({ success: false, message: response.data.message || "Transfer Gagal" });
+            res.status(400).json({ success: false, message: response.data?.message || "Transfer Gagal" });
         }
     } catch (err) {
-        res.status(500).json({ success: false, message: "Gagal memproses transfer bank" });
+        const errMsg = err.response?.data?.message || err.message;
+        res.status(500).json({ success: false, message: `Atlantic: ${errMsg}` });
     }
 });
 
+// Request Deposit Saldo Otomatis via Atlantic H2H
 app.post('/api/atlantic/deposit', async (req, res) => {
     const { nominal, method } = req.body;
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
 
     try {
-        const response = await axios.post(`${ATLANTIC_BASE_URL}/deposit/create`, {
-            api_key: apiKey, nominal, metode: method
+        const response = await postAtlantic('/deposit/create', {
+            api_key: apiKey,
+            nominal: nominal,
+            metode: method
         });
         res.json(response.data);
     } catch (err) {
-        res.status(500).json({ status: false, message: "Gagal membuat tiket deposit" });
+        const errMsg = err.response?.data?.message || err.message;
+        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
     }
 });
 
+// Manual Katalog Produk RianShop
 app.get('/api/products', async (req, res) => {
     try {
         const result = await queryTurso("SELECT * FROM products");
@@ -191,6 +232,7 @@ app.get('/api/products', async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// Transaksi Checkout Casaku
 app.post('/api/create-transaction', async (req, res) => {
     const { cart, phone } = req.body;
     if (!cart || cart.length === 0 || !phone) return res.status(400).json({ message: "Data tidak lengkap" });
@@ -230,8 +272,13 @@ app.post('/api/create-transaction', async (req, res) => {
                 [orderId, phone, itemsName.join(', '), totalAmount, 'PENDING']
             );
             res.json({ success: true, payment_url: response.data.payment_url });
-        } else res.status(400).json({ message: "Gagal membuat invoice Casaku." });
-    } catch (error) { res.status(500).json({ message: "Kesalahan server pembayaran." }); }
+        } else {
+            res.status(400).json({ message: response.data?.message || "Gagal membuat invoice Casaku." });
+        }
+    } catch (error) {
+        const errMsg = error.response?.data?.message || error.message;
+        res.status(500).json({ message: `Casaku Error: ${errMsg}` });
+    }
 });
 
 app.post('/api/casaku-callback', async (req, res) => {
