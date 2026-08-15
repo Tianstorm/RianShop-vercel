@@ -255,8 +255,8 @@ app.post('/api/create-transaction', async (req, res) => {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
 
     try {
-        const response = await axios.post('https://api.casaku.id/v1/transaction/create', {
-            merchant_id: merchantId,
+        const response = await axios.post('https://api.casaku.id/api/generate/qris', {
+            id: merchantId,
             order_id: orderId,
             amount: totalAmount,
             customer_phone: phone,
