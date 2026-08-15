@@ -18,7 +18,7 @@ const db = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN
 });
 
-// Auto-Create Database Tables & Auto Migration
+// Auto-Create Database Tables (Aman Tanpa Alter Table yang Error)
 async function initDb() {
     try {
         await db.execute(`CREATE TABLE IF NOT EXISTS products (
@@ -29,10 +29,6 @@ async function initDb() {
             image TEXT,
             category TEXT
         )`);
-        
-        try {
-            await db.execute(`ALTER TABLE products ADD COLUMN image TEXT`);
-        } catch (colErr) {}
 
         await db.execute(`CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -43,6 +39,7 @@ async function initDb() {
             status TEXT, 
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
+        
         await db.execute(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)`);
     } catch (e) {
         console.error("DB Init Error:", e);
@@ -327,4 +324,3 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = app;
-      
