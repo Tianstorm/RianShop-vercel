@@ -1,6 +1,6 @@
 {
   "name": "rianshop-fullstack",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "main": "api/index.js",
   "dependencies": {
     "@libsql/client": "^0.6.0",
