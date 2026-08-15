@@ -2,7 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const { createClient } = require('@libsql/client');
+
+// IMPORT KHUSUS VERCEL SERVERLESS (Memakai /web untuk cegah error 400 migration)
+const { createClient } = require('@libsql/client/web');
 const jwt = require('jsonwebtoken');
 
 const app = express();
@@ -12,7 +14,7 @@ app.use(cors());
 // BASE URL API ATLANTIC H2H
 const ATLANTIC_BASE_URL = "https://atlantich2h.com/api";
 
-// Database Turso Cloud SQLite
+// Inisialisasi Database Turso Client Web
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN
@@ -295,3 +297,4 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = app;
+                       
