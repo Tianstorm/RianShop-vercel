@@ -239,7 +239,8 @@ app.post('/api/generate/qris', async (req, res) => {
 
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
-    const apiKey = config.casaku_api_key || config.api_key || process.env.CASAKU_API_KEY || '';
+    const apiKey = "cashify_79a67f81f86e2e479e3198d0c7439a21a73e7206a32076e5770e93ac6ce794ab";
+    
 
     console.log("DEBUG CASAKU KEY:", apiKey);
     
