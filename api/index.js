@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const apiKey = config.api_key || process.env.CASAKU_API_KEY;
+const apiKey = config.config_api_key || process.env.CASAKU_API_KEY;
 const axios = require('axios');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -264,11 +264,12 @@ app.post('/api/generate/qris', async (req, res) => {
     description: itemsName.join(', '),
     callback_url: `${protocol}://${host}/api/casaku-callback`
   }, {
-    headers: {
+        headers: {
       'Authorization': `Bearer ${apiKey}`,
-      'x-license-key': apiKey,
+      'x-license-key': `${apiKey}`,
+      'X-License-Key': `${apiKey}`,
       'Content-Type': 'application/json'
-    }
+        }
   });
 
         if (response.data && response.data.payment_url) {
