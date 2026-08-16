@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const apiKey = config.config_api_key || process.env.CASAKU_API_KEY;
 const axios = require('axios');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -240,8 +239,10 @@ app.post('/api/generate/qris', async (req, res) => {
 
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
-    const merchantId = config.id || process.env.CASAKU_MERCHANT_ID;
+    const apiKey = config.api_key || config.casaku_api_key || process.env.CASAKU_API_KEY;
 
+    console.log("DEBUG CASAKU KEY:", apiKey);
+    
     let totalAmount = 0, itemsName = [];
     for (let item of cart) {
         const prodRes = await queryTurso("SELECT * FROM products WHERE id = ?", [item.id]);
@@ -267,7 +268,6 @@ app.post('/api/generate/qris', async (req, res) => {
         headers: {
       'Authorization': `Bearer ${apiKey}`,
       'x-license-key': `${apiKey}`,
-      'X-License-Key': `${apiKey}`,
       'Content-Type': 'application/json'
         }
   });
