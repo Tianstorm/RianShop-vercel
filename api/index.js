@@ -238,40 +238,29 @@ app.post('/api/generate/qris', async (req, res) => {
     if (!cart || cart.length === 0 || !phone) return res.status(400).json({ message: "Data tidak lengkap" });
 
     const config = await getSettings();
-    const apiKey = config.api_key || process.env.CASAKU_API_KEY;
-    const apiKey = "cashify_79a67f81f86e2e479e3198d0c7439a21a73e7206a32076e5770e93ac6ce794ab";
-    
+    const apiKe
+    // Ambil API Key (Pastikan diisi fallback string lisensi asli jika env kosong)
+const apiKey = config.casaku_api_key || config.api_key || process.env.CASAKU_API_KEY || "cashify_79a67f81f86e2e479e3198d0c7439a21a73e7206a32076e5770e93ac6ce794ab";
+const merchantId = config.casaku_merchant_id || config.merchant_id || process.env.CASAKU_MERCHANT_ID;
 
-    console.log("DEBUG CASAKU KEY:", apiKey);
-    
-    let totalAmount = 0, itemsName = [];
-    for (let item of cart) {
-        const prodRes = await queryTurso("SELECT * FROM products WHERE id = ?", [item.id]);
-        const prod = prodRes.rows[0];
-        if (!prod || prod.stock < item.qty) return res.status(400).json({ message: `Stok produk ${item.name} habis!` });
-        totalAmount += prod.price * item.qty;
-        itemsName.push(`${prod.name} (${item.qty}x)`);
-    }
-
-    const orderId = "INV-" + Date.now();
-    const host = req.headers.host;
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-
-    try {
+try {
   const response = await axios.post('https://api.casaku.id/api/generate/qris', {
     id: merchantId,
     order_id: orderId,
     amount: totalAmount,
     customer_phone: phone,
     description: itemsName.join(', '),
-    callback_url: `${protocol}://${host}/api/casaku-callback`
+    callback_url: `${protocol}://${host}/api/casaku-callback`,
+    'x-license-key': apiKey
   }, {
-        headers: {
+    headers: {
       'Authorization': `Bearer ${apiKey}`,
-      'x-license-key': `${apiKey}`,
+      'x-license-key': apiKey,
+      'X-License-Key': apiKey,
       'Content-Type': 'application/json'
-        }
+    }
   });
+
 
         if (response.data && response.data.payment_url) {
             await queryTurso(
