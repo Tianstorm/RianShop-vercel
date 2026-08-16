@@ -3,6 +3,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const { Casaku } = require('casaku');
 
 const app = express();
 app.use(express.json());
@@ -232,50 +233,64 @@ app.get('/api/products', async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Transaksi Checkout Casaku
-app.post('/api/generate/qris', async (req, res) => {
+// Transaksi Checkout dengan SDK Casaku (QRIS v2)
+app.post('/api/create-transaction', async (req, res) => {
     const { cart, phone } = req.body;
     if (!cart || cart.length === 0 || !phone) return res.status(400).json({ message: "Data tidak lengkap" });
 
     const config = await getSettings();
-    const apiKe
-    // Ambil API Key (Pastikan diisi fallback string lisensi asli jika env kosong)
-const config = await getSettings();
-// Masukkan lisensi aslimu di dalam tanda kutip sebagai cadangan jika env tidak terbaca
-const apiKey = process.env.CASAKU_API_KEY || config.api_key || "cashify_79a67f81f86e2e479e3198d0c7439a21a73e7206a32076e5770e93ac6ce794ab";
-const merchantId = process.env.CASAKU_MERCHANT_ID || config.merchant_id || "a0381cb6-88b6-4fce-b923-4a18efeff1e6";
-    
-try {
-  const response = await axios.post('https://api.casaku.id/api/generate/qris', {
-    id: merchantId,
-    order_id: orderId,
-    amount: totalAmount,
-    customer_phone: phone,
-    description: itemsName.join(', '),
-    callback_url: `${protocol}://${host}/api/casaku-callback`,
-    'x-license-key': apiKey
-  }, {
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'x-license-key': apiKey,
-      'X-License-Key': apiKey,
-      'Content-Type': 'application/json'
+    const apiKey = config.api_key || process.env.CASAKU_API_KEY;
+    const merchantId = config.merchant_id || process.env.CASAKU_MERCHANT_ID;
+
+    if (!apiKey || !merchantId) {
+        return res.status(500).json({ message: "Casaku Error: Kredensial API Key atau Merchant ID belum diatur!" });
     }
-  });
 
+    let totalAmount = 0, itemsName = [];
+    for (let item of cart) {
+        const prodRes = await queryTurso("SELECT * FROM products WHERE id = ?", [item.id]);
+        const prod = prodRes.rows[0];
+        if (!prod || prod.stock < item.qty) return res.status(400).json({ message: `Stok produk ${item.name} habis!` });
+        totalAmount += prod.price * item.qty;
+        itemsName.push(`${prod.name} (${item.qty}x)`);
+    }
 
-        if (response.data && response.data.payment_url) {
+    const orderId = "INV-" + Date.now();
+
+    try {
+        // Inisialisasi SDK Casaku
+        const casaku = new Casaku({ licenseKey: apiKey });
+
+        // Generate QRIS v2
+        const trx = await casaku.generateQRISv2({
+            qr_id: merchantId,
+            amount: totalAmount,
+            packageIds: ["id.dana"],
+            qrType: "dynamic",
+            paymentMethod: "qris",
+            useQris: true,
+            useUniqueCode: true
+        });
+
+        if (trx && trx.data) {
             await queryTurso(
                 "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
-                [orderId, phone, itemsName.join(', '), totalAmount, 'PENDING']
+                [orderId, phone, itemsName.join(', '), trx.data.totalAmount || totalAmount, 'PENDING']
             );
-            res.json({ success: true, payment_url: response.data.payment_url });
+
+            res.json({
+                success: true,
+                transactionId: trx.data.transactionId,
+                totalAmount: trx.data.totalAmount,
+                qr_string: trx.data.qr_string,
+                payment_url: trx.data.qr_string
+            });
         } else {
-            res.status(400).json({ message: response.data?.message || "Gagal membuat invoice Casaku." });
+            res.status(400).json({ message: "Gagal membuat transaksi QRIS Casaku." });
         }
     } catch (error) {
         const errMsg = error.response?.data?.message || error.message;
-        res.status(500).json({ message: `Casaku Error: ${errMsg}` });
+        res.status(500).json({ message: `Casaku SDK Error: ${errMsg}` });
     }
 });
 
@@ -354,3 +369,4 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = app;
+    
