@@ -240,9 +240,11 @@ app.post('/api/generate/qris', async (req, res) => {
     const config = await getSettings();
     const apiKe
     // Ambil API Key (Pastikan diisi fallback string lisensi asli jika env kosong)
-const apiKey = config.casaku_api_key || config.api_key || process.env.CASAKU_API_KEY || "cashify_79a67f81f86e2e479e3198d0c7439a21a73e7206a32076e5770e93ac6ce794ab";
-const merchantId = config.casaku_merchant_id || config.merchant_id || process.env.CASAKU_MERCHANT_ID;
-
+const config = await getSettings();
+// Masukkan lisensi aslimu di dalam tanda kutip sebagai cadangan jika env tidak terbaca
+const apiKey = process.env.CASAKU_API_KEY || config.api_key || "cashify_79a67f81f86e2e479e3198d0c7439a21a73e7206a32076e5770e93ac6ce794ab";
+const merchantId = process.env.CASAKU_MERCHANT_ID || config.merchant_id || "a0381cb6-88b6-4fce-b923-4a18efeff1e6";
+    
 try {
   const response = await axios.post('https://api.casaku.id/api/generate/qris', {
     id: merchantId,
