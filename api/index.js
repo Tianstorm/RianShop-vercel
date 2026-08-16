@@ -239,7 +239,7 @@ app.post('/api/generate/qris', async (req, res) => {
 
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
-    const apiKey = config.api_key || config.casaku_api_key || process.env.CASAKU_API_KEY;
+    const apiKey = config.casaku_api_key || config.api_key || process.env.CASAKU_API_KEY || '';
 
     console.log("DEBUG CASAKU KEY:", apiKey);
     
