@@ -14,24 +14,19 @@
 </head>
 <body class="pb-28">
 
-    <!-- Header Navigation -->
     <header class="glass sticky top-0 z-40 p-4 flex justify-between items-center shadow-lg">
         <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
             <i class="fa-solid fa-bolt"></i> RianShop
         </h1>
-        <div class="flex items-center gap-3">
-            <button id="cartBtn" onclick="toggleCartModal()" class="p-2.5 glass rounded-full relative text-gray-300 hover:text-white transition">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
-            </button>
-        </div>
+        <button id="cartBtn" onclick="toggleCartModal()" class="p-2.5 glass rounded-full relative text-gray-300 hover:text-white transition">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
+        </button>
     </header>
 
     <audio id="bgAudio" loop></audio>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
-
-        <!-- BILAH NAVIGASI UTAMA (MENU PRODUK vs MENU TOPUP) -->
         <div class="grid grid-cols-2 gap-2 glass p-1.5 rounded-2xl shadow-md border border-gray-700">
             <button onclick="switchMainNav('produk')" id="nav-btn-produk" class="py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow">
                 <i class="fa-solid fa-store"></i> Menu Produk
@@ -41,106 +36,44 @@
             </button>
         </div>
 
-        <!-- ==================== MENU PRODUK ==================== -->
         <section id="main-sec-produk">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
-                    <i class="fa-solid fa-fire"></i> Katalog Produk RianShop
-                </h2>
-                <span class="text-[10px] text-gray-400">Stok Otomatis</span>
-            </div>
             <div id="productGrid" class="grid grid-cols-2 gap-3">
                 <p class="col-span-2 text-center text-sm text-gray-400 py-6">Memuat produk...</p>
             </div>
         </section>
 
-        <!-- ==================== MENU TOP UP & LAYANAN ==================== -->
         <section id="main-sec-topup" class="hidden space-y-4">
-            
-            <!-- SUB-BILAH NAVIGASI TOP UP -->
             <div class="grid grid-cols-4 gap-1.5 text-center text-[11px] font-semibold glass p-1.5 rounded-xl border border-gray-800">
-                <button onclick="switchTopUpSub('prabayar')" id="subtab-prabayar" class="py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40">
-                    Prabayar
-                </button>
-                <button onclick="switchTopUpSub('pascabayar')" id="subtab-pascabayar" class="py-2 rounded-lg text-gray-400 hover:text-white">
-                    Pascabayar
-                </button>
-                <button onclick="switchTopUpSub('transfer')" id="subtab-transfer" class="py-2 rounded-lg text-gray-400 hover:text-white">
-                    Transfer
-                </button>
-                <button onclick="switchTopUpSub('deposit')" id="subtab-deposit" class="py-2 rounded-lg text-gray-400 hover:text-white">
-                    Deposit
-                </button>
+                <button onclick="switchTopUpSub('prabayar')" id="subtab-prabayar" class="py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40">Prabayar</button>
+                <button onclick="switchTopUpSub('pascabayar')" id="subtab-pascabayar" class="py-2 rounded-lg text-gray-400 hover:text-white">Pascabayar</button>
+                <button onclick="switchTopUpSub('transfer')" id="subtab-transfer" class="py-2 rounded-lg text-gray-400 hover:text-white">Transfer</button>
+                <button onclick="switchTopUpSub('deposit')" id="subtab-deposit" class="py-2 rounded-lg text-gray-400 hover:text-white">Deposit</button>
             </div>
 
-            <!-- Sub 1: Prabayar -->
             <div id="sub-sec-prabayar" class="glass p-4 rounded-2xl space-y-3">
-                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
-                    <i class="fa-solid fa-mobile-screen"></i> Isi Pulsa / Data / Game
-                </h3>
                 <input type="text" id="praTarget" placeholder="Nomor HP / ID Game Target" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="text" id="praCode" placeholder="Kode Produk (cth: S10, TSEL5)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="text" id="praCode" placeholder="Kode Produk" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
                 <input type="number" id="praPhone" placeholder="No. WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <button onclick="orderPrabayar()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
-                    Beli Sekarang
-                </button>
+                <button onclick="orderPrabayar()" class="w-full py-2.5 bg-indigo-600 font-bold rounded-xl text-xs">Beli Sekarang</button>
             </div>
-
-            <!-- Sub 2: Pascabayar -->
-            <div id="sub-sec-pascabayar" class="hidden glass p-4 rounded-2xl space-y-3">
-                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> Cek & Bayar Tagihan (PLN / BPJS / PDAM)
-                </h3>
-                <input type="text" id="pasCode" placeholder="Kode Tagihan (cth: PLNPOST)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="text" id="pasTarget" placeholder="Nomor ID Pelanggan" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <button onclick="checkPascabayar()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
-                    Cek Tagihan
-                </button>
-            </div>
-
-            <!-- Sub 3: Transfer Bank -->
-            <div id="sub-sec-transfer" class="hidden glass p-4 rounded-2xl space-y-3">
-                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
-                    <i class="fa-solid fa-money-bill-transfer"></i> Transfer Bank via Atlantic H2H
-                </h3>
-                <input type="text" id="trfBank" placeholder="Kode Bank (cth: bca, bri, mandiri)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="text" id="trfAccount" placeholder="Nomor Rekening Tujuan" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="number" id="trfAmount" placeholder="Nominal Transfer (Rp)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="number" id="trfPhone" placeholder="No WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <button onclick="processTransfer()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
-                    Proses Transfer
-                </button>
-            </div>
-
-            <!-- Sub 4: Deposit Saldo -->
-            <div id="sub-sec-deposit" class="hidden glass p-4 rounded-2xl space-y-3">
-                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
-                    <i class="fa-solid fa-wallet"></i> Deposit Saldo Atlantic H2H
-                </h3>
-                <input type="number" id="depNominal" placeholder="Nominal Deposit (Rp)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="text" id="depMethod" placeholder="Metode Pembayaran (cth: qris, bca)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <button onclick="processDeposit()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
-                    Request Deposit
-                </button>
-            </div>
-
         </section>
-
     </main>
 
-    <!-- FLOATING MUSIC PLAYER (MELAYANG DI BAWAH) -->
+    <!-- FLOATING MUSIC PLAYER (MURNI PLAYLIST DARI ADMIN) -->
     <div id="musicFloatingContainer" class="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-        <div id="musicPanel" class="hidden glass p-3.5 rounded-2xl shadow-2xl w-72 space-y-3 border border-indigo-500/30 transition-all duration-300">
+        <div id="musicPanel" class="hidden glass p-3.5 rounded-2xl shadow-2xl w-72 space-y-3 border border-indigo-500/30">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
                 <span class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
                     <i class="fa-solid fa-compact-disc fa-spin"></i> Music Player
                 </span>
                 <button onclick="toggleMusicWidget()" class="text-gray-400 hover:text-white text-xs">&times;</button>
             </div>
+
             <div>
-                <p id="currentSongTitle" class="text-xs font-semibold text-gray-200 line-clamp-1">Memuat Musik...</p>
+                <p id="currentSongTitle" class="text-xs font-semibold text-gray-200 line-clamp-1">Belum Ada Musik</p>
                 <p class="text-[10px] text-gray-400 mt-0.5">RianShop Audio Player</p>
             </div>
+
             <div class="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-gray-800">
                 <button onclick="prevSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-backward-step"></i></button>
                 <button onclick="togglePlayPause()" id="playPauseBtn" class="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs transition">
@@ -148,20 +81,14 @@
                 </button>
                 <button onclick="nextSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-forward-step"></i></button>
             </div>
-            <div class="space-y-1 max-h-32 overflow-y-auto pr-1">
+
+            <div class="space-y-1 max-h-40 overflow-y-auto pr-1">
                 <p class="text-[10px] font-bold text-gray-400 mb-1">Daftar Putar:</p>
                 <div id="playlistContainer" class="space-y-1"></div>
             </div>
-            <div class="pt-1 border-t border-gray-800 space-y-1.5">
-                <p class="text-[10px] text-gray-400">Putar dari Link MP3 Sendiri:</p>
-                <div class="flex gap-1">
-                    <input type="text" id="customAudioUrl" placeholder="https://.../music.mp3" class="w-full p-1.5 rounded-lg bg-slate-900 border border-gray-700 text-[11px]">
-                    <button onclick="playCustomUrl()" class="px-2.5 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold rounded-lg">Set</button>
-                </div>
-            </div>
         </div>
 
-        <button onclick="toggleMusicWidget()" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-105 border-2 border-indigo-400/50">
+        <button onclick="toggleMusicWidget()" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl border-2 border-indigo-400/50">
             <i class="fa-solid fa-music text-base"></i>
         </button>
     </div>
@@ -173,117 +100,69 @@
                 <h3 class="font-bold text-lg">Detail Checkout</h3>
                 <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white">&times;</button>
             </div>
-            
             <div id="cartItems" class="space-y-3"></div>
-
-            <div class="space-y-2 pt-2">
-                <label class="text-xs text-gray-400">Nomor WhatsApp Penerima:</label>
-                <input type="number" id="custPhone" placeholder="08xxxxxxxxxx" class="w-full p-2.5 rounded-lg bg-slate-900 border border-gray-700 text-sm focus:outline-none focus:border-indigo-500">
-            </div>
-
+            <input type="number" id="custPhone" placeholder="08xxxxxxxxxx" class="w-full p-2.5 rounded-lg bg-slate-900 border border-gray-700 text-sm">
             <div class="border-t border-gray-700 pt-3 flex justify-between items-center">
                 <span class="text-sm font-semibold">Total Pembayaran:</span>
                 <span id="totalAmount" class="text-lg font-bold text-indigo-400">Rp 0</span>
             </div>
-
-            <button id="checkoutBtn" onclick="processCheckout()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl shadow-lg transition">
-                Bayar Sekarang (QRIS)
-            </button>
+            <button id="checkoutBtn" onclick="processCheckout()" class="w-full py-3 bg-indigo-600 font-bold rounded-xl">Bayar Sekarang (QRIS)</button>
         </div>
     </div>
 
-    <!-- Modal Display QRIS & Polling -->
+    <!-- Modal Display QRIS -->
     <div id="qrisModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
         <div class="glass w-full max-w-sm rounded-2xl p-6 text-center space-y-4 relative">
             <button onclick="closeQrisModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white">&times;</button>
             <h3 class="font-bold text-lg text-indigo-300">Scan QRIS Untuk Membayar</h3>
-            <div class="bg-white p-4 rounded-xl inline-block shadow-inner mx-auto">
-                <canvas id="qrisCanvas"></canvas>
-            </div>
-            <div class="text-sm space-y-1">
-                <p class="text-gray-400 text-xs">Total Pembayaran (Termasuk Kode Unik):</p>
-                <p id="qrisTotal" class="text-xl font-black text-emerald-400">Rp 0</p>
-            </div>
-            <div class="flex items-center justify-center gap-2 text-xs text-indigo-400 animate-pulse pt-2">
-                <i class="fa-solid fa-spinner fa-spin"></i> Menunggu pembayaran kamu...
-            </div>
+            <div class="bg-white p-4 rounded-xl inline-block mx-auto"><canvas id="qrisCanvas"></canvas></div>
+            <p id="qrisTotal" class="text-xl font-black text-emerald-400">Rp 0</p>
         </div>
     </div>
 
     <script>
         let cart = [];
         let pollingInterval = null;
-
-        let playlist = [
-            { title: "Musik Default Admin", url: "" },
-            { title: "Lofi Beats Chill", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-            { title: "Ambient Relaxing", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
-        ];
+        let playlist = [];
         let currentTrackIndex = 0;
         let isPlaying = false;
 
         async function init() {
             loadPublicSettings();
             loadProducts();
-            renderPlaylist();
         }
 
         async function loadPublicSettings() {
             try {
                 const res = await fetch('/api/settings/public');
                 const data = await res.json();
-                if (data.bg_music) {
-                    playlist[0].url = data.bg_music;
+                if (data.playlist && data.playlist.length) {
+                    playlist = data.playlist;
                     changeSong(0);
-                } else { changeSong(1); }
-            } catch(e) { changeSong(1); }
+                } else {
+                    document.getElementById('currentSongTitle').innerText = "Playlist Kosong";
+                }
+            } catch(e) {}
         }
 
-        // Handler Navigasi Utama (Menu Produk vs Menu Top Up)
-        function switchMainNav(target) {
-            const btnProduk = document.getElementById('nav-btn-produk');
-            const btnTopup = document.getElementById('nav-btn-topup');
-            const secProduk = document.getElementById('main-sec-produk');
-            const secTopup = document.getElementById('main-sec-topup');
-
-            if (target === 'produk') {
-                secProduk.classList.remove('hidden');
-                secTopup.classList.add('hidden');
-                btnProduk.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
-                btnTopup.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
-            } else {
-                secProduk.classList.add('hidden');
-                secTopup.classList.remove('hidden');
-                btnTopup.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
-                btnProduk.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
-            }
-        }
-
-        // Handler Sub-Navigasi Top Up
-        function switchTopUpSub(subName) {
-            ['prabayar', 'pascabayar', 'transfer', 'deposit'].forEach(s => {
-                document.getElementById(`sub-sec-${s}`).classList.add('hidden');
-                document.getElementById(`subtab-${s}`).className = "py-2 rounded-lg text-gray-400 hover:text-white";
-            });
-            document.getElementById(`sub-sec-${subName}`).classList.remove('hidden');
-            document.getElementById(`subtab-${subName}`).className = "py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40";
-        }
-
-        function toggleMusicWidget() {
-            document.getElementById('musicPanel').classList.toggle('hidden');
-        }
+        function toggleMusicWidget() { document.getElementById('musicPanel').classList.toggle('hidden'); }
 
         function renderPlaylist() {
             const container = document.getElementById('playlistContainer');
+            if (!playlist.length) {
+                container.innerHTML = '<p class="text-[10px] text-gray-400">Belum ada musik dari admin.</p>';
+                return;
+            }
             container.innerHTML = playlist.map((song, idx) => `
                 <button onclick="changeSong(${idx})" class="w-full text-left p-1.5 rounded-lg text-[11px] flex justify-between items-center ${idx === currentTrackIndex ? 'bg-indigo-600/30 text-indigo-300 font-bold' : 'hover:bg-slate-800 text-gray-400'}">
-                    <span class="line-clamp-1">${song.title}</span>
+                    <span class="line-clamp-1">${idx + 1}. ${song.title}</span>
                     ${idx === currentTrackIndex && isPlaying ? '<i class="fa-solid fa-volume-high text-[10px]"></i>' : ''}
                 </button>
             `).join('');
         }
 
         function changeSong(index) {
+            if (!playlist.length) return;
             currentTrackIndex = index;
             const song = playlist[index];
             const audio = document.getElementById('bgAudio');
@@ -299,7 +178,7 @@
         function togglePlayPause() {
             const audio = document.getElementById('bgAudio');
             const icon = document.getElementById('playIcon');
-            if (!audio.src) return alert("Pilih musik terlebih dahulu!");
+            if (!audio.src) return alert("Belum ada lagu tersedia!");
 
             if (isPlaying) {
                 audio.pause();
@@ -313,25 +192,42 @@
         }
 
         function prevSong() {
+            if (!playlist.length) return;
             currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
             changeSong(currentTrackIndex);
             if (isPlaying) document.getElementById('bgAudio').play();
         }
 
         function nextSong() {
+            if (!playlist.length) return;
             currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
             changeSong(currentTrackIndex);
             if (isPlaying) document.getElementById('bgAudio').play();
         }
 
-        function playCustomUrl() {
-            const url = document.getElementById('customAudioUrl').value.trim();
-            if (!url) return alert("Masukkan URL MP3!");
-            
-            playlist.push({ title: "Custom Audio URL", url: url });
-            changeSong(playlist.length - 1);
-            if (!isPlaying) togglePlayPause();
-            alert("Musik kustom berhasil ditambahkan!");
+        function switchMainNav(target) {
+            if (target === 'produk') {
+                document.getElementById('main-sec-produk').classList.remove('hidden');
+                document.getElementById('main-sec-topup').classList.add('hidden');
+                document.getElementById('nav-btn-produk').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
+                document.getElementById('nav-btn-topup').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
+            } else {
+                document.getElementById('main-sec-produk').classList.add('hidden');
+                document.getElementById('main-sec-topup').classList.remove('hidden');
+                document.getElementById('nav-btn-topup').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
+                document.getElementById('nav-btn-produk').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
+            }
+        }
+
+        function switchTopUpSub(subName) {
+            ['prabayar', 'pascabayar', 'transfer', 'deposit'].forEach(s => {
+                const el = document.getElementById(`sub-sec-${s}`);
+                if (el) el.classList.add('hidden');
+                document.getElementById(`subtab-${s}`).className = "py-2 rounded-lg text-gray-400 hover:text-white";
+            });
+            const targetEl = document.getElementById(`sub-sec-${subName}`);
+            if (targetEl) targetEl.classList.remove('hidden');
+            document.getElementById(`subtab-${subName}`).className = "py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40";
         }
 
         async function loadProducts() {
@@ -339,31 +235,25 @@
             try {
                 const res = await fetch('/api/products');
                 const products = await res.json();
-                if (!products.length) {
-                    grid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-400 py-6">Belum ada produk.</p>';
-                    return;
-                }
+                if (!products.length) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-400 py-6">Belum ada produk.</p>'; return; }
                 grid.innerHTML = products.map(p => `
                     <div class="glass p-3 rounded-xl flex flex-col justify-between space-y-2">
                         <div>
                             <img src="${p.image || 'https://via.placeholder.com/150'}" class="w-full h-24 object-cover rounded-lg mb-2">
                             <h4 class="font-bold text-sm text-gray-200 line-clamp-1">${p.name}</h4>
                             <p class="text-xs text-indigo-400 font-bold mt-1">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
-                            <p class="text-[10px] text-gray-400">Stok: ${p.stock}</p>
                         </div>
                         <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="w-full py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-xs rounded-lg font-semibold transition mt-2">
                             + Keranjang
                         </button>
                     </div>
                 `).join('');
-            } catch(e) {
-                grid.innerHTML = '<p class="col-span-2 text-center text-sm text-red-400 py-6">Gagal memuat produk.</p>';
-            }
+            } catch(e) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-red-400 py-6">Gagal memuat produk.</p>'; }
         }
 
         function addToCart(id, name, price) {
             const exist = cart.find(item => item.id === id);
-            if (exist) { exist.qty++; } else { cart.push({ id, name, price, qty: 1 }); }
+            if (exist) exist.qty++; else cart.push({ id, name, price, qty: 1 });
             updateCartUI();
         }
 
@@ -375,36 +265,18 @@
                         <p class="font-semibold">${item.name}</p>
                         <p class="text-xs text-indigo-400">Rp ${Number(item.price).toLocaleString('id-ID')} x ${item.qty}</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="changeQty(${item.id}, -1)" class="px-2 py-0.5 glass rounded">-</button>
-                        <span>${item.qty}</span>
-                        <button onclick="changeQty(${item.id}, 1)" class="px-2 py-0.5 glass rounded">+</button>
-                    </div>
                 </div>
             `).join('');
-            const total = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-            document.getElementById('totalAmount').innerText = `Rp ${total.toLocaleString('id-ID')}`;
-        }
-
-        function changeQty(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.qty += delta;
-                if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
-                updateCartUI();
-            }
+            document.getElementById('totalAmount').innerText = `Rp ${cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0).toLocaleString('id-ID')}`;
         }
 
         function toggleCartModal() { document.getElementById('cartModal').classList.toggle('hidden'); }
 
         async function processCheckout() {
             const phone = document.getElementById('custPhone').value.trim();
-            if (!phone) return alert("Nomor WhatsApp wajib diisi!");
-            if (cart.length === 0) return alert("Keranjang belanja kosong!");
-
+            if (!phone || !cart.length) return alert("Lengkapi data checkout!");
             const btn = document.getElementById('checkoutBtn');
             btn.disabled = true;
-            btn.innerText = "Memproses...";
 
             try {
                 const res = await fetch('/api/create-transaction', {
@@ -413,107 +285,21 @@
                     body: JSON.stringify({ cart, phone })
                 });
                 const data = await res.json();
-
                 if (data.success && data.qr_string) {
                     toggleCartModal();
                     showQrisModal(data.qr_string, data.totalAmount, data.transactionId);
-                } else {
-                    alert(data.message || "Gagal membuat invoice QRIS.");
-                }
-            } catch(e) { alert("Terjadi kesalahan sistem."); }
-            finally { btn.disabled = false; btn.innerText = "Bayar Sekarang (QRIS)"; }
+                } else alert(data.message || "Gagal QRIS");
+            } catch(e) { alert("Error sistem"); }
+            finally { btn.disabled = false; }
         }
 
         function showQrisModal(qrString, total, transactionId) {
             document.getElementById('qrisTotal').innerText = `Rp ${Number(total).toLocaleString('id-ID')}`;
-            QRCode.toCanvas(document.getElementById('qrisCanvas'), qrString, { width: 220 }, function (e) { if (e) console.error(e); });
+            QRCode.toCanvas(document.getElementById('qrisCanvas'), qrString, { width: 220 });
             document.getElementById('qrisModal').classList.remove('hidden');
-
-            if (pollingInterval) clearInterval(pollingInterval);
-            pollingInterval = setInterval(() => checkPaymentStatus(transactionId), 3000);
         }
 
-        async function checkPaymentStatus(transactionId) {
-            try {
-                const res = await fetch('/api/casaku/check-status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transactionId })
-                });
-                const data = await res.json();
-                if (data.status && (data.data?.status === 'SUCCESS' || data.data?.status === 'PAID' || data.data?.status === 'paid')) {
-                    clearInterval(pollingInterval);
-                    alert("PEMBAYARAN BERHASIL! 🎉 Terima kasih telah berbelanja.");
-                    cart = [];
-                    updateCartUI();
-                    closeQrisModal();
-                    loadProducts();
-                }
-            } catch(e) {}
-        }
-
-        function closeQrisModal() {
-            if (pollingInterval) clearInterval(pollingInterval);
-            document.getElementById('qrisModal').classList.add('hidden');
-        }
-
-        async function orderPrabayar() {
-            const target = document.getElementById('praTarget').value;
-            const code = document.getElementById('praCode').value;
-            const phone = document.getElementById('praPhone').value;
-            if(!target || !code || !phone) return alert("Lengkapi data!");
-
-            const res = await fetch('/api/atlantic/prabayar/transaksi', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, target, phone })
-            });
-            const data = await res.json();
-            alert(data.message || (data.success ? "Transaksi Berhasil Diproses!" : "Transaksi Gagal"));
-        }
-
-        async function checkPascabayar() {
-            const code = document.getElementById('pasCode').value;
-            const target = document.getElementById('pasTarget').value;
-            if(!code || !target) return alert("Lengkapi data!");
-
-            const res = await fetch('/api/atlantic/pascabayar/cek', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, target })
-            });
-            const data = await res.json();
-            alert(JSON.stringify(data));
-        }
-        async function processTransfer() {
-            const bank_code = document.getElementById('trfBank').value;
-            const account_no = document.getElementById('trfAccount').value;
-            const amount = document.getElementById('trfAmount').value;
-            const phone = document.getElementById('trfPhone').value;
-            if(!bank_code || !account_no || !amount || !phone) return alert("Lengkapi data!");
-
-            const res = await fetch('/api/atlantic/transfer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bank_code, account_no, amount, phone })
-            });
-            const data = await res.json();
-            alert(data.message || "Request transfer terkirim!");
-        }
-
-        async function processDeposit() {
-            const nominal = document.getElementById('depNominal').value;
-            const method = document.getElementById('depMethod').value;
-            if(!nominal || !method) return alert("Lengkapi data!");
-
-            const res = await fetch('/api/atlantic/deposit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nominal, method })
-            });
-            const data = await res.json();
-            alert(JSON.stringify(data));
-        }
+        function closeQrisModal() { document.getElementById('qrisModal').classList.add('hidden'); }
 
         init();
     </script>
