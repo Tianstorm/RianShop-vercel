@@ -263,7 +263,11 @@ app.post('/api/generate/qris', async (req, res) => {
             description: itemsName.join(', '),
             callback_url: `${protocol}://${host}/api/casaku-callback`
         }, {
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'x-license-key': apiKey, 'Content-Type': 'application/json' }
+            headers: { 
+  'Authorization': `Bearer ${apiKey}`, 
+  'x-license-key': apiKey, 
+  'Content-Type': 'application/json'
+        }
         });
 
         if (response.data && response.data.payment_url) {
