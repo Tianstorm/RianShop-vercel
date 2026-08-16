@@ -13,10 +13,16 @@ const ATLANTIC_BASE_URL = "https://atlantich2h.com/api";
 const CASAKU_BASE_URL = "https://api.casaku.id";
 
 // -------------------------------------------------------------
-// FUNKSI DATABASE TURSO HTTP REST API MURNI
+// FUNKSI DATABASE TURSO HTTP REST API MURNI (SAFE-GUARD)
 // -------------------------------------------------------------
 async function queryTurso(sql, args = []) {
     const rawUrl = process.env.TURSO_DATABASE_URL || '';
+    const token = process.env.TURSO_AUTH_TOKEN || '';
+
+    if (!rawUrl || !token) {
+        throw new Error("TURSO_DATABASE_URL atau TURSO_AUTH_TOKEN belum diatur di Vercel Environment Variables");
+    }
+
     const httpUrl = rawUrl.replace('libsql://', 'https://');
 
     const formattedArgs = args.map(arg => {
@@ -35,7 +41,7 @@ async function queryTurso(sql, args = []) {
         },
         {
             headers: {
-                'Authorization': `Bearer ${process.env.TURSO_AUTH_TOKEN}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         }
@@ -61,11 +67,17 @@ async function queryTurso(sql, args = []) {
 
 const getSettings = async () => {
     try {
+        if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+            return {};
+        }
         const res = await queryTurso("SELECT * FROM settings");
         const config = {};
-        if (res.rows) res.rows.forEach(r => config[r.key] = r.value);
+        if (res && res.rows) res.rows.forEach(r => config[r.key] = r.value);
         return config;
-    } catch (e) { return {}; }
+    } catch (e) { 
+        console.error("Turso Settings Error:", e.message);
+        return {}; 
+    }
 };
 
 const authenticateAdmin = (req, res, next) => {
@@ -99,12 +111,13 @@ app.get('/api/settings/public', async (req, res) => {
     res.json({ bg_music: config.bg_music || '' });
 });
 
-// GET CATALOG PRODUCTS (AMBIL PRODUK)
+// GET CATALOG PRODUCTS
 app.get('/api/products', async (req, res) => {
     try {
         const result = await queryTurso("SELECT * FROM products");
         res.json(result.rows || []);
     } catch (err) { 
+        console.error("Products Load Error:", err.message);
         res.status(500).json({ message: err.message }); 
     }
 });
@@ -233,7 +246,7 @@ app.post('/api/atlantic/deposit', async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// CASAKU GENERATE QRIS v2 (NATIVE HTTP REQUEST)
+// CASAKU GENERATE QRIS v2 ENDPOINTS
 // -------------------------------------------------------------
 
 app.post('/api/create-transaction', async (req, res) => {
@@ -411,4 +424,4 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = app;
-            
+        
