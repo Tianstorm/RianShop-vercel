@@ -8,63 +8,211 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        body { 
+            background: #090d16; 
+            color: #f8fafc; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Animated Glowing Mesh Background */
+        .animated-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+            animation: pulseBg 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseBg {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Glassmorphism Ultra Modern */
+        .glass-panel { 
+            background: rgba(15, 23, 42, 0.75); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Sidebar Transition Slide */
+        .sidebar-drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="pb-28">
 
-    <header class="glass sticky top-0 z-40 p-4 flex justify-between items-center shadow-lg">
-        <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-            <i class="fa-solid fa-bolt"></i> RianShop
-        </h1>
-        <button id="cartBtn" onclick="toggleCartModal()" class="p-2.5 glass rounded-full relative text-gray-300 hover:text-white transition">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
+    <!-- Animated Dynamic Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Header Navigation Bar -->
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 flex justify-between items-center shadow-2xl">
+        <div class="flex items-center gap-3">
+            <!-- Sidebar Open Button -->
+            <button onclick="toggleSidebar()" class="p-2.5 glass-panel rounded-xl text-indigo-400 hover:text-white transition active:scale-95">
+                <i class="fa-solid fa-bars-staggered text-lg"></i>
+            </button>
+            <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-indigo-400"></i> RianShop
+            </h1>
+        </div>
+
+        <button id="cartBtn" onclick="toggleCartModal()" class="p-2.5 glass-panel rounded-xl relative text-gray-300 hover:text-white transition active:scale-95">
+            <i class="fa-solid fa-cart-shopping text-base"></i>
+            <span id="cartCount" class="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-lg">0</span>
         </button>
     </header>
 
-    <audio id="bgAudio" loop></audio>
+    <!-- SIDEBAR NAVIGATION SLIDEBAR (OFF-CANVAS) -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
+    
+    <aside id="sidebarDrawer" class="sidebar-drawer fixed top-0 left-0 h-full w-72 glass-panel z-50 -translate-x-full p-5 space-y-6 flex flex-col justify-between border-r border-indigo-500/20">
+        <div class="space-y-6">
+            <!-- Sidebar Header -->
+            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-400/50 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-indigo-400"></i>
+                    </div>
+                    <span class="font-bold text-sm tracking-wide text-indigo-300">RIANSHOP MENU</span>
+                </div>
+                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white p-1">&times;</button>
+            </div>
 
-    <main class="max-w-md mx-auto p-4 space-y-5">
-        <div class="grid grid-cols-2 gap-2 glass p-1.5 rounded-2xl shadow-md border border-gray-700">
-            <button onclick="switchMainNav('produk')" id="nav-btn-produk" class="py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow">
-                <i class="fa-solid fa-store"></i> Menu Produk
-            </button>
-            <button onclick="switchMainNav('topup')" id="nav-btn-topup" class="py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white">
-                <i class="fa-solid fa-wallet"></i> Menu Top Up
-            </button>
+            <!-- Sidebar Menu List -->
+            <nav class="space-y-1.5 text-xs font-semibold">
+                <p class="text-[10px] uppercase font-bold text-gray-500 px-3 mb-2">Main Navigation</p>
+                <button onclick="selectMenu('katalog')" id="side-katalog" class="w-full p-3 rounded-xl flex items-center gap-3 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-bold transition">
+                    <i class="fa-solid fa-store text-sm w-5 text-indigo-400"></i> Katalog Produk
+                </button>
+                <button onclick="selectMenu('prabayar')" id="side-prabayar" class="w-full p-3 rounded-xl flex items-center gap-3 text-gray-400 hover:bg-slate-800/60 hover:text-white transition">
+                    <i class="fa-solid fa-mobile-screen text-sm w-5 text-purple-400"></i> Top Up Prabayar
+                </button>
+                <button onclick="selectMenu('pascabayar')" id="side-pascabayar" class="w-full p-3 rounded-xl flex items-center gap-3 text-gray-400 hover:bg-slate-800/60 hover:text-white transition">
+                    <i class="fa-solid fa-file-invoice-dollar text-sm w-5 text-emerald-400"></i> Tagihan Pascabayar
+                </button>
+                <button onclick="selectMenu('transfer')" id="side-transfer" class="w-full p-3 rounded-xl flex items-center gap-3 text-gray-400 hover:bg-slate-800/60 hover:text-white transition">
+                    <i class="fa-solid fa-money-bill-transfer text-sm w-5 text-blue-400"></i> Transfer Bank
+                </button>
+                <button onclick="selectMenu('deposit')" id="side-deposit" class="w-full p-3 rounded-xl flex items-center gap-3 text-gray-400 hover:bg-slate-800/60 hover:text-white transition">
+                    <i class="fa-solid fa-wallet text-sm w-5 text-amber-400"></i> Deposit Saldo
+                </button>
+            </nav>
         </div>
 
-        <section id="main-sec-produk">
-            <div id="productGrid" class="grid grid-cols-2 gap-3">
-                <p class="col-span-2 text-center text-sm text-gray-400 py-6">Memuat produk...</p>
+        <div class="glass-card p-3 rounded-xl text-center space-y-1 border border-indigo-500/20">
+            <p class="text-[10px] text-gray-400">Layanan Otomatis 24 Jam</p>
+            <p class="text-xs font-bold text-indigo-300">RianShop Cyber v2.5</p>
+        </div>
+    </aside>
+
+    <audio id="bgAudio" loop></audio>
+
+    <!-- Main Content Container -->
+    <main class="max-w-md mx-auto p-4 space-y-5">
+
+        <!-- Header Category Badge -->
+        <div class="glass-panel p-3.5 rounded-2xl flex justify-between items-center shadow-lg border border-indigo-500/20">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="currentMenuLabel" class="text-xs font-bold text-gray-200 uppercase tracking-wider">Katalog Produk Digital</span>
+            </div>
+            <span class="text-[10px] text-indigo-400 font-semibold bg-indigo-950/50 px-2.5 py-1 rounded-full border border-indigo-800">Sistem Otomatis</span>
+        </div>
+
+        <!-- Section 1: Katalog Produk -->
+        <section id="sec-katalog">
+            <div id="productGrid" class="grid grid-cols-2 gap-3.5">
+                <p class="col-span-2 text-center text-sm text-gray-400 py-10">Memuat produk...</p>
             </div>
         </section>
 
-        <section id="main-sec-topup" class="hidden space-y-4">
-            <div class="grid grid-cols-4 gap-1.5 text-center text-[11px] font-semibold glass p-1.5 rounded-xl border border-gray-800">
-                <button onclick="switchTopUpSub('prabayar')" id="subtab-prabayar" class="py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40">Prabayar</button>
-                <button onclick="switchTopUpSub('pascabayar')" id="subtab-pascabayar" class="py-2 rounded-lg text-gray-400 hover:text-white">Pascabayar</button>
-                <button onclick="switchTopUpSub('transfer')" id="subtab-transfer" class="py-2 rounded-lg text-gray-400 hover:text-white">Transfer</button>
-                <button onclick="switchTopUpSub('deposit')" id="subtab-deposit" class="py-2 rounded-lg text-gray-400 hover:text-white">Deposit</button>
-            </div>
-
-            <div id="sub-sec-prabayar" class="glass p-4 rounded-2xl space-y-3">
-                <input type="text" id="praTarget" placeholder="Nomor HP / ID Game Target" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="text" id="praCode" placeholder="Kode Produk" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <input type="number" id="praPhone" placeholder="No. WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-                <button onclick="orderPrabayar()" class="w-full py-2.5 bg-indigo-600 font-bold rounded-xl text-xs">Beli Sekarang</button>
+        <!-- Section 2: Atlantic Prabayar -->
+        <section id="sec-prabayar" class="hidden glass-card p-5 rounded-2xl space-y-4">
+            <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-mobile-screen text-purple-400"></i> Top Up Pulsa / Data / Game
+            </h3>
+            <div class="space-y-3">
+                <input type="text" id="praTarget" placeholder="Nomor HP / ID Game Target" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="text" id="praCode" placeholder="Kode Produk (cth: S10, TSEL5)" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="number" id="praPhone" placeholder="No. WhatsApp Notifikasi" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <button onclick="orderPrabayar()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold rounded-xl text-xs transition shadow-lg">Beli Sekarang</button>
             </div>
         </section>
+
+        <!-- Section 3: Atlantic Pascabayar -->
+        <section id="sec-pascabayar" class="hidden glass-card p-5 rounded-2xl space-y-4">
+            <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar text-emerald-400"></i> Cek & Bayar Tagihan (PLN / BPJS)
+            </h3>
+            <div class="space-y-3">
+                <input type="text" id="pasCode" placeholder="Kode Tagihan (cth: PLNPOST)" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="text" id="pasTarget" placeholder="Nomor ID Pelanggan" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <button onclick="checkPascabayar()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 font-bold rounded-xl text-xs transition shadow-lg">Cek Tagihan</button>
+            </div>
+        </section>
+
+        <!-- Section 4: Transfer Bank -->
+        <section id="sec-transfer" class="hidden glass-card p-5 rounded-2xl space-y-4">
+            <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-money-bill-transfer text-blue-400"></i> Transfer Bank via Atlantic H2H
+            </h3>
+            <div class="space-y-3">
+                <input type="text" id="trfBank" placeholder="Kode Bank (cth: bca, bri, mandiri)" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="text" id="trfAccount" placeholder="Nomor Rekening Tujuan" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="number" id="trfAmount" placeholder="Nominal Transfer (Rp)" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="number" id="trfPhone" placeholder="No WhatsApp Notifikasi" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <button onclick="processTransfer()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 font-bold rounded-xl text-xs transition shadow-lg">Proses Transfer</button>
+            </div>
+        </section>
+
+        <!-- Section 5: Deposit Saldo -->
+        <section id="sec-deposit" class="hidden glass-card p-5 rounded-2xl space-y-4">
+            <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-wallet text-amber-400"></i> Deposit Saldo Atlantic H2H
+            </h3>
+            <div class="space-y-3">
+                <input type="number" id="depNominal" placeholder="Nominal Deposit (Rp)" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <input type="text" id="depMethod" placeholder="Metode Pembayaran (cth: qris, bca)" class="w-full p-3 rounded-xl bg-slate-900/80 border border-gray-700/80 text-sm focus:border-indigo-500 focus:outline-none">
+                <button onclick="processDeposit()" class="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 font-bold rounded-xl text-xs transition shadow-lg">Request Deposit</button>
+            </div>
+        </section>
+
     </main>
 
-    <!-- FLOATING MUSIC PLAYER (MURNI PLAYLIST DARI ADMIN) -->
-    <div id="musicFloatingContainer" class="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-        <div id="musicPanel" class="hidden glass p-3.5 rounded-2xl shadow-2xl w-72 space-y-3 border border-indigo-500/30">
-            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <span class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-compact-disc fa-spin"></i> Music Player
+    <!-- FLOATING WHATSAPP BUTTON (KIRI BAWAH) -->
+    <a href="https://wa.me/6289692103013?text=Halo%20Admin%20RianShop,%20saya%20butuh%20bantuan." 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="fixed bottom-5 left-5 z-40 p-3.5 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 border border-white/20 shadow-emerald-950/50">
+        <i class="fa-brands fa-whatsapp text-2xl"></i>
+    </a>
+
+    <!-- FLOATING MUSIC PLAYER (KANAN BAWAH) -->
+    <div id="musicFloatingContainer" class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
+        <div id="musicPanel" class="hidden glass-panel p-4 rounded-2xl shadow-2xl w-72 space-y-3 border border-indigo-500/30">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                <span class="text-xs font-bold text-indigo-400 flex items-center gap-2">
+                    <i class="fa-solid fa-compact-disc fa-spin"></i> Cyber Audio Player
                 </span>
                 <button onclick="toggleMusicWidget()" class="text-gray-400 hover:text-white text-xs">&times;</button>
             </div>
@@ -74,7 +222,7 @@
                 <p class="text-[10px] text-gray-400 mt-0.5">RianShop Audio Player</p>
             </div>
 
-            <div class="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-gray-800">
+            <div class="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-gray-800">
                 <button onclick="prevSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-backward-step"></i></button>
                 <button onclick="togglePlayPause()" id="playPauseBtn" class="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs transition">
                     <i id="playIcon" class="fa-solid fa-play"></i>
@@ -82,54 +230,97 @@
                 <button onclick="nextSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-forward-step"></i></button>
             </div>
 
-            <div class="space-y-1 max-h-40 overflow-y-auto pr-1">
+            <div class="space-y-1 max-h-36 overflow-y-auto pr-1">
                 <p class="text-[10px] font-bold text-gray-400 mb-1">Daftar Putar:</p>
                 <div id="playlistContainer" class="space-y-1"></div>
             </div>
         </div>
 
-        <button onclick="toggleMusicWidget()" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl border-2 border-indigo-400/50">
+        <button onclick="toggleMusicWidget()" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl border border-indigo-400/50 hover:scale-105 transition">
             <i class="fa-solid fa-music text-base"></i>
         </button>
     </div>
 
     <!-- Modal Cart & Checkout -->
-    <div id="cartModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center">
-        <div class="glass w-full max-w-md rounded-t-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
-                <h3 class="font-bold text-lg">Detail Checkout</h3>
+    <div id="cartModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end justify-center">
+        <div class="glass-panel w-full max-w-md rounded-t-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto border-t border-indigo-500/30">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 class="font-bold text-lg text-indigo-300">Detail Checkout</h3>
                 <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white">&times;</button>
             </div>
             <div id="cartItems" class="space-y-3"></div>
-            <input type="number" id="custPhone" placeholder="08xxxxxxxxxx" class="w-full p-2.5 rounded-lg bg-slate-900 border border-gray-700 text-sm">
-            <div class="border-t border-gray-700 pt-3 flex justify-between items-center">
-                <span class="text-sm font-semibold">Total Pembayaran:</span>
-                <span id="totalAmount" class="text-lg font-bold text-indigo-400">Rp 0</span>
+            <div class="space-y-1 pt-1">
+                <label class="text-xs text-gray-400">Nomor WhatsApp Penerima:</label>
+                <input type="number" id="custPhone" placeholder="08xxxxxxxxxx" class="w-full p-3 rounded-xl bg-slate-900 border border-gray-800 text-sm focus:border-indigo-500 focus:outline-none">
             </div>
-            <button id="checkoutBtn" onclick="processCheckout()" class="w-full py-3 bg-indigo-600 font-bold rounded-xl">Bayar Sekarang (QRIS)</button>
+            <div class="border-t border-gray-800 pt-3 flex justify-between items-center">
+                <span class="text-sm font-semibold text-gray-300">Total Pembayaran:</span>
+                <span id="totalAmount" class="text-xl font-bold text-indigo-400">Rp 0</span>
+            </div>
+            <button id="checkoutBtn" onclick="processCheckout()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 font-bold rounded-xl shadow-lg hover:from-indigo-500 hover:to-purple-500 transition">Bayar Sekarang (QRIS)</button>
         </div>
     </div>
 
     <!-- Modal Display QRIS -->
-    <div id="qrisModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
-        <div class="glass w-full max-w-sm rounded-2xl p-6 text-center space-y-4 relative">
-            <button onclick="closeQrisModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white">&times;</button>
-            <h3 class="font-bold text-lg text-indigo-300">Scan QRIS Untuk Membayar</h3>
-            <div class="bg-white p-4 rounded-xl inline-block mx-auto"><canvas id="qrisCanvas"></canvas></div>
-            <p id="qrisTotal" class="text-xl font-black text-emerald-400">Rp 0</p>
+    <div id="qrisModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-6 text-center space-y-4 relative border border-indigo-500/30 shadow-2xl">
+            <button onclick="closeQrisModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
+            <h3 class="font-bold text-lg text-indigo-300">Scan QRIS Pembayaran</h3>
+            <div class="bg-white p-4 rounded-2xl inline-block shadow-inner mx-auto"><canvas id="qrisCanvas"></canvas></div>
+            <div class="space-y-0.5">
+                <p class="text-[10px] text-gray-400">Total Pembayaran (Termasuk Kode Unik):</p>
+                <p id="qrisTotal" class="text-2xl font-black text-emerald-400">Rp 0</p>
+            </div>
         </div>
     </div>
 
     <script>
         let cart = [];
-        let pollingInterval = null;
         let playlist = [];
         let currentTrackIndex = 0;
         let isPlaying = false;
 
+        const menuLabels = {
+            katalog: "Katalog Produk Digital",
+            prabayar: "Top Up Pulsa / Data / Game",
+            pascabayar: "Pembayaran Tagihan Pascabayar",
+            transfer: "Layanan Transfer Bank",
+            deposit: "Deposit Saldo Atlantic"
+        };
+
         async function init() {
             loadPublicSettings();
             loadProducts();
+        }
+
+        // Toggle Sidebar Drawer
+        function toggleSidebar() {
+            const drawer = document.getElementById('sidebarDrawer');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (drawer.classList.contains('-translate-x-full')) {
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        function selectMenu(menuKey) {
+            ['katalog', 'prabayar', 'pascabayar', 'transfer', 'deposit'].forEach(m => {
+                document.getElementById(`sec-${m}`).classList.add('hidden');
+                const btn = document.getElementById(`side-${m}`);
+                btn.className = "w-full p-3 rounded-xl flex items-center gap-3 text-gray-400 hover:bg-slate-800/60 hover:text-white transition";
+            });
+
+            document.getElementById(`sec-${menuKey}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`side-${menuKey}`);
+            activeBtn.className = "w-full p-3 rounded-xl flex items-center gap-3 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-bold transition";
+            document.getElementById('currentMenuLabel').innerText = menuLabels[menuKey];
+            toggleSidebar();
         }
 
         async function loadPublicSettings() {
@@ -154,7 +345,7 @@
                 return;
             }
             container.innerHTML = playlist.map((song, idx) => `
-                <button onclick="changeSong(${idx})" class="w-full text-left p-1.5 rounded-lg text-[11px] flex justify-between items-center ${idx === currentTrackIndex ? 'bg-indigo-600/30 text-indigo-300 font-bold' : 'hover:bg-slate-800 text-gray-400'}">
+                <button onclick="changeSong(${idx})" class="w-full text-left p-1.5 rounded-lg text-[11px] flex justify-between items-center ${idx === currentTrackIndex ? 'bg-indigo-600/30 text-indigo-300 font-bold' : 'hover:bg-slate-800/60 text-gray-400'}">
                     <span class="line-clamp-1">${idx + 1}. ${song.title}</span>
                     ${idx === currentTrackIndex && isPlaying ? '<i class="fa-solid fa-volume-high text-[10px]"></i>' : ''}
                 </button>
@@ -167,7 +358,6 @@
             const song = playlist[index];
             const audio = document.getElementById('bgAudio');
             document.getElementById('currentSongTitle').innerText = song.title;
-            
             if(song.url) {
                 audio.src = song.url;
                 if (isPlaying) audio.play();
@@ -205,50 +395,25 @@
             if (isPlaying) document.getElementById('bgAudio').play();
         }
 
-        function switchMainNav(target) {
-            if (target === 'produk') {
-                document.getElementById('main-sec-produk').classList.remove('hidden');
-                document.getElementById('main-sec-topup').classList.add('hidden');
-                document.getElementById('nav-btn-produk').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
-                document.getElementById('nav-btn-topup').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
-            } else {
-                document.getElementById('main-sec-produk').classList.add('hidden');
-                document.getElementById('main-sec-topup').classList.remove('hidden');
-                document.getElementById('nav-btn-topup').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
-                document.getElementById('nav-btn-produk').className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
-            }
-        }
-
-        function switchTopUpSub(subName) {
-            ['prabayar', 'pascabayar', 'transfer', 'deposit'].forEach(s => {
-                const el = document.getElementById(`sub-sec-${s}`);
-                if (el) el.classList.add('hidden');
-                document.getElementById(`subtab-${s}`).className = "py-2 rounded-lg text-gray-400 hover:text-white";
-            });
-            const targetEl = document.getElementById(`sub-sec-${subName}`);
-            if (targetEl) targetEl.classList.remove('hidden');
-            document.getElementById(`subtab-${subName}`).className = "py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40";
-        }
-
         async function loadProducts() {
             const grid = document.getElementById('productGrid');
             try {
                 const res = await fetch('/api/products');
                 const products = await res.json();
-                if (!products.length) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-400 py-6">Belum ada produk.</p>'; return; }
+                if (!products.length) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-400 py-10">Belum ada produk.</p>'; return; }
                 grid.innerHTML = products.map(p => `
-                    <div class="glass p-3 rounded-xl flex flex-col justify-between space-y-2">
+                    <div class="glass-card p-3.5 rounded-2xl flex flex-col justify-between space-y-3">
                         <div>
-                            <img src="${p.image || 'https://via.placeholder.com/150'}" class="w-full h-24 object-cover rounded-lg mb-2">
-                            <h4 class="font-bold text-sm text-gray-200 line-clamp-1">${p.name}</h4>
-                            <p class="text-xs text-indigo-400 font-bold mt-1">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
+                            <img src="${p.image || 'https://via.placeholder.com/150'}" class="w-full h-28 object-cover rounded-xl mb-2.5">
+                            <h4 class="font-bold text-xs text-gray-200 line-clamp-1">${p.name}</h4>
+                            <p class="text-xs text-indigo-400 font-extrabold mt-1">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
                         </div>
-                        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="w-full py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-xs rounded-lg font-semibold transition mt-2">
+                        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="w-full py-2 bg-indigo-600/80 hover:bg-indigo-600 text-[11px] rounded-xl font-bold transition">
                             + Keranjang
                         </button>
                     </div>
                 `).join('');
-            } catch(e) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-red-400 py-6">Gagal memuat produk.</p>'; }
+            } catch(e) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-red-400 py-10">Gagal memuat produk.</p>'; }
         }
 
         function addToCart(id, name, price) {
@@ -260,16 +425,16 @@
         function updateCartUI() {
             document.getElementById('cartCount').innerText = cart.reduce((acc, curr) => acc + curr.qty, 0);
             document.getElementById('cartItems').innerHTML = cart.map(item => `
-                <div class="flex justify-between items-center text-sm glass p-2 rounded-lg">
+                <div class="flex justify-between items-center text-sm glass-card p-3 rounded-xl">
                     <div>
-                        <p class="font-semibold">${item.name}</p>
-                        <p class="text-xs text-indigo-400">Rp ${Number(item.price).toLocaleString('id-ID')} x ${item.qty}</p>
+                        <p class="font-semibold text-xs">${item.name}</p>
+                        <p class="text-xs text-indigo-400 font-bold">Rp ${Number(item.price).toLocaleString('id-ID')} x ${item.qty}</p>
                     </div>
                 </div>
             `).join('');
             document.getElementById('totalAmount').innerText = `Rp ${cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0).toLocaleString('id-ID')}`;
         }
-
+        
         function toggleCartModal() { document.getElementById('cartModal').classList.toggle('hidden'); }
 
         async function processCheckout() {
