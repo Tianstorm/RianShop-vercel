@@ -3,7 +3,6 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { Casaku } = require('casaku');
 
 const app = express();
 app.use(express.json());
@@ -92,13 +91,27 @@ async function postAtlantic(endpoint, params) {
 }
 
 // -------------------------------------------------------------
-// PUBLIC & ATLANTIC H2H ENDPOINTS
+// PUBLIC & PRODUCTS ENDPOINTS
 // -------------------------------------------------------------
 
 app.get('/api/settings/public', async (req, res) => {
     const config = await getSettings();
     res.json({ bg_music: config.bg_music || '' });
 });
+
+// GET CATALOG PRODUCTS (AMBIL PRODUK)
+app.get('/api/products', async (req, res) => {
+    try {
+        const result = await queryTurso("SELECT * FROM products");
+        res.json(result.rows || []);
+    } catch (err) { 
+        res.status(500).json({ message: err.message }); 
+    }
+});
+
+// -------------------------------------------------------------
+// ATLANTIC H2H ENDPOINTS
+// -------------------------------------------------------------
 
 app.get('/api/atlantic/profile', async (req, res) => {
     const config = await getSettings();
@@ -219,15 +232,8 @@ app.post('/api/atlantic/deposit', async (req, res) => {
     }
 });
 
-app.get('/api/products', async (req, res) => {
-    try {
-        const result = await queryTurso("SELECT * FROM products");
-        res.json(result.rows || []);
-    } catch (err) { res.status(500).json({ message: err.message }); }
-});
-
 // -------------------------------------------------------------
-// CASAKU SDK & API ENDPOINTS (v2.1)
+// CASAKU GENERATE QRIS v2 (NATIVE HTTP REQUEST)
 // -------------------------------------------------------------
 
 app.post('/api/create-transaction', async (req, res) => {
@@ -256,20 +262,31 @@ app.post('/api/create-transaction', async (req, res) => {
     }
 
     try {
-        const casaku = new Casaku({ licenseKey: apiKey });
-        const trx = await casaku.generateQRISv2({
-            qr_id: merchantId,
-            amount: totalAmount,
-            packageIds: ["id.dana", "com.shopee.id"],
-            qrType: "dynamic",
-            paymentMethod: "qris",
-            useQris: true,
-            useUniqueCode: true
-        });
+        const response = await axios.post(
+            `${CASAKU_BASE_URL}/api/generate/v2/qris`,
+            {
+                qr_id: merchantId,
+                amount: totalAmount,
+                useUniqueCode: true,
+                packageIds: ["id.dana", "com.shopee.id"],
+                expiredInMinutes: 15,
+                qrType: "dynamic",
+                paymentMethod: "qris",
+                useQris: true,
+                prefix: "CSK"
+            },
+            {
+                headers: {
+                    'x-license-key': apiKey,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
 
-        if (trx && trx.data) {
-            const finalAmount = trx.data.totalAmount || totalAmount;
-            const transactionId = trx.data.transactionId;
+        if (response.data && (response.data.status === 200 || response.data.status === true)) {
+            const resData = response.data.data || {};
+            const finalAmount = resData.totalAmount || resData.amount || totalAmount;
+            const transactionId = resData.transactionId || ("CSK-" + Date.now());
 
             await queryTurso(
                 "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
@@ -280,14 +297,15 @@ app.post('/api/create-transaction', async (req, res) => {
                 success: true,
                 transactionId: transactionId,
                 totalAmount: finalAmount,
-                qr_string: trx.data.qr_string,
-                payment_url: trx.data.qr_string
+                qr_string: resData.qr_string || resData.qrString,
+                payment_url: resData.qr_string || resData.qrString
             });
         } else {
-            res.status(400).json({ message: "Gagal membuat transaksi QRIS via SDK Casaku." });
+            res.status(400).json({ message: response.data?.message || "Gagal membuat transaksi QRIS v2." });
         }
     } catch (error) {
-        res.status(500).json({ message: `Casaku SDK Error: ${error.message}` });
+        const errMsg = error.response?.data?.message || error.message;
+        res.status(500).json({ message: `Casaku v2 Error: ${errMsg}` });
     }
 });
 
@@ -393,4 +411,4 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = app;
-        
+            
