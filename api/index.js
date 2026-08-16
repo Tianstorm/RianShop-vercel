@@ -9,11 +9,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// BASE URL API ATLANTIC H2H
+// BASE URL APIs
 const ATLANTIC_BASE_URL = "https://atlantich2h.com/api";
+const CASAKU_BASE_URL = "https://api.casaku.id";
 
 // -------------------------------------------------------------
-// FUNKSI DATABASE TURSO HTTP REST API MURNI (BEBAS ERROR MIGRATION 400)
+// FUNKSI DATABASE TURSO HTTP REST API MURNI
 // -------------------------------------------------------------
 async function queryTurso(sql, args = []) {
     const rawUrl = process.env.TURSO_DATABASE_URL || '';
@@ -78,7 +79,6 @@ const authenticateAdmin = (req, res, next) => {
     } catch (e) { res.status(403).json({ message: "Sesi login kadaluarsa" }); }
 };
 
-// Helper Request Form-Data ke Atlantic H2H
 async function postAtlantic(endpoint, params) {
     const searchParams = new URLSearchParams();
     for (const key in params) {
@@ -100,7 +100,6 @@ app.get('/api/settings/public', async (req, res) => {
     res.json({ bg_music: config.bg_music || '' });
 });
 
-// Cek Profile / Saldo Atlantic H2H
 app.get('/api/atlantic/profile', async (req, res) => {
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
@@ -113,7 +112,6 @@ app.get('/api/atlantic/profile', async (req, res) => {
     }
 });
 
-// Layanan Prabayar Atlantic H2H
 app.post('/api/atlantic/prabayar/layanan', async (req, res) => {
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
@@ -126,7 +124,6 @@ app.post('/api/atlantic/prabayar/layanan', async (req, res) => {
     }
 });
 
-// Transaksi Prabayar (Pulsa/Data/Game) via Atlantic H2H
 app.post('/api/atlantic/prabayar/transaksi', async (req, res) => {
     const { code, target, phone } = req.body;
     const config = await getSettings();
@@ -156,7 +153,6 @@ app.post('/api/atlantic/prabayar/transaksi', async (req, res) => {
     }
 });
 
-// Cek Tagihan Pascabayar (PLN/BPJS/PDAM) via Atlantic H2H
 app.post('/api/atlantic/pascabayar/cek', async (req, res) => {
     const { code, target } = req.body;
     const config = await getSettings();
@@ -175,7 +171,6 @@ app.post('/api/atlantic/pascabayar/cek', async (req, res) => {
     }
 });
 
-// Transfer Bank via Atlantic H2H
 app.post('/api/atlantic/transfer', async (req, res) => {
     const { bank_code, account_no, amount, phone } = req.body;
     const config = await getSettings();
@@ -206,7 +201,6 @@ app.post('/api/atlantic/transfer', async (req, res) => {
     }
 });
 
-// Request Deposit Saldo Otomatis via Atlantic H2H
 app.post('/api/atlantic/deposit', async (req, res) => {
     const { nominal, method } = req.body;
     const config = await getSettings();
@@ -225,7 +219,6 @@ app.post('/api/atlantic/deposit', async (req, res) => {
     }
 });
 
-// Manual Katalog Produk RianShop
 app.get('/api/products', async (req, res) => {
     try {
         const result = await queryTurso("SELECT * FROM products");
@@ -233,39 +226,41 @@ app.get('/api/products', async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Transaksi Checkout dengan SDK Casaku (QRIS v2)
+// -------------------------------------------------------------
+// CASAKU SDK & API ENDPOINTS (v2.1)
+// -------------------------------------------------------------
+
 app.post('/api/create-transaction', async (req, res) => {
     const { cart, phone } = req.body;
-    if (!cart || cart.length === 0 || !phone) return res.status(400).json({ message: "Data tidak lengkap" });
+    if (!cart || cart.length === 0 || !phone) {
+        return res.status(400).json({ message: "Data tidak lengkap" });
+    }
 
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
     const merchantId = config.merchant_id || process.env.CASAKU_MERCHANT_ID;
 
     if (!apiKey || !merchantId) {
-        return res.status(500).json({ message: "Casaku Error: Kredensial API Key atau Merchant ID belum diatur!" });
+        return res.status(500).json({ message: "Casaku Error: License Key / Merchant ID belum diisi!" });
     }
 
     let totalAmount = 0, itemsName = [];
     for (let item of cart) {
         const prodRes = await queryTurso("SELECT * FROM products WHERE id = ?", [item.id]);
         const prod = prodRes.rows[0];
-        if (!prod || prod.stock < item.qty) return res.status(400).json({ message: `Stok produk ${item.name} habis!` });
+        if (!prod || prod.stock < item.qty) {
+            return res.status(400).json({ message: `Stok produk ${item.name} habis!` });
+        }
         totalAmount += prod.price * item.qty;
         itemsName.push(`${prod.name} (${item.qty}x)`);
     }
 
-    const orderId = "INV-" + Date.now();
-
     try {
-        // Inisialisasi SDK Casaku
         const casaku = new Casaku({ licenseKey: apiKey });
-
-        // Generate QRIS v2
         const trx = await casaku.generateQRISv2({
             qr_id: merchantId,
             amount: totalAmount,
-            packageIds: ["id.dana"],
+            packageIds: ["id.dana", "com.shopee.id"],
             qrType: "dynamic",
             paymentMethod: "qris",
             useQris: true,
@@ -273,41 +268,67 @@ app.post('/api/create-transaction', async (req, res) => {
         });
 
         if (trx && trx.data) {
+            const finalAmount = trx.data.totalAmount || totalAmount;
+            const transactionId = trx.data.transactionId;
+
             await queryTurso(
                 "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
-                [orderId, phone, itemsName.join(', '), trx.data.totalAmount || totalAmount, 'PENDING']
+                [transactionId, phone, itemsName.join(', '), finalAmount, 'PENDING']
             );
 
             res.json({
                 success: true,
-                transactionId: trx.data.transactionId,
-                totalAmount: trx.data.totalAmount,
+                transactionId: transactionId,
+                totalAmount: finalAmount,
                 qr_string: trx.data.qr_string,
                 payment_url: trx.data.qr_string
             });
         } else {
-            res.status(400).json({ message: "Gagal membuat transaksi QRIS Casaku." });
+            res.status(400).json({ message: "Gagal membuat transaksi QRIS via SDK Casaku." });
         }
     } catch (error) {
+        res.status(500).json({ message: `Casaku SDK Error: ${error.message}` });
+    }
+});
+
+app.post('/api/casaku/check-status', async (req, res) => {
+    const { transactionId } = req.body;
+    if (!transactionId) {
+        return res.status(400).json({ success: false, message: "transactionId wajib diisi" });
+    }
+
+    const config = await getSettings();
+    const apiKey = config.api_key || process.env.CASAKU_API_KEY;
+
+    try {
+        const response = await axios.post(
+            `${CASAKU_BASE_URL}/api/generate/check-status`,
+            { transactionId: transactionId },
+            { headers: { 'x-license-key': apiKey, 'Content-Type': 'application/json' } }
+        );
+        res.json(response.data);
+    } catch (error) {
         const errMsg = error.response?.data?.message || error.message;
-        res.status(500).json({ message: `Casaku SDK Error: ${errMsg}` });
+        res.status(500).json({ success: false, message: `Casaku Check Status Error: ${errMsg}` });
     }
 });
 
 app.post('/api/casaku-callback', async (req, res) => {
-    const { order_id, status, customer_phone, description, amount } = req.body;
-    if (status === 'SUCCESS' || status === 'PAID') {
-        await queryTurso("UPDATE transactions SET status = 'SUCCESS' WHERE order_id = ?", [order_id]);
+    const { order_id, transactionId, status, customer_phone, description, amount } = req.body;
+    const targetId = transactionId || order_id;
+
+    if (status === 'SUCCESS' || status === 'paid' || status === 'PAID') {
+        await queryTurso("UPDATE transactions SET status = 'SUCCESS' WHERE order_id = ?", [targetId]);
         const productsRes = await queryTurso("SELECT * FROM products");
         for (let p of productsRes.rows) {
-            if (description.includes(p.name)) {
+            if (description && description.includes(p.name)) {
                 await queryTurso("UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?", [p.id]);
             }
         }
         try {
             await axios.post('https://api.fonnte.com/send', {
                 target: customer_phone,
-                message: `*PEMBAYARAN SUCCESS!* 🎉\n\nNo. Order: ${order_id}\nProduk: ${description}\nTotal Bayar: Rp ${Number(amount).toLocaleString('id-ID')}\n\n*Terima kasih telah berbelanja di RianShop!*`
+                message: `*PEMBAYARAN SUCCESS!* 🎉\n\nNo. Order: ${targetId}\nProduk: ${description || 'Katalog RianShop'}\nTotal Bayar: Rp ${Number(amount).toLocaleString('id-ID')}\n\n*Terima kasih telah berbelanja di RianShop!*`
             }, { headers: { 'Authorization': process.env.WA_GATEWAY_TOKEN } });
         } catch (e) {}
         return res.status(200).json({ status: 'OK' });
@@ -315,7 +336,10 @@ app.post('/api/casaku-callback', async (req, res) => {
     res.status(400).json({ status: 'FAILED' });
 });
 
-// --- ADMIN ROUTES ---
+// -------------------------------------------------------------
+// ADMIN ROUTES
+// -------------------------------------------------------------
+
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
@@ -369,4 +393,4 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 module.exports = app;
-    
+        
