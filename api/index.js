@@ -255,20 +255,20 @@ app.post('/api/generate/qris', async (req, res) => {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
 
     try {
-        const response = await axios.post('https://api.casaku.id/api/generate/qris', {
-            id: merchantId,
-            order_id: orderId,
-            amount: totalAmount,
-            customer_phone: phone,
-            description: itemsName.join(', '),
-            callback_url: `${protocol}://${host}/api/casaku-callback`
-        }, {
-            headers: { 
-  'Authorization': `Bearer ${apiKey}`, 
-  'x-license-key': apiKey, 
-  'Content-Type': 'application/json'
-        }
-        });
+  const response = await axios.post('https://api.casaku.id/api/generate/qris', {
+    id: merchantId,
+    order_id: orderId,
+    amount: totalAmount,
+    customer_phone: phone,
+    description: itemsName.join(', '),
+    callback_url: `${protocol}://${host}/api/casaku-callback`
+  }, {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'x-license-key': apiKey,
+      'Content-Type': 'application/json'
+    }
+  });
 
         if (response.data && response.data.payment_url) {
             await queryTurso(
