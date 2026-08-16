@@ -5,16 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - RianShop</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style> body { background-color: #0f172a; color: #f8fafc; } </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style> body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; } </style>
 </head>
-<body class="p-4 max-w-xl mx-auto space-y-6">
+<body class="p-4 max-w-xl mx-auto space-y-6 pb-20">
+
     <div class="flex justify-between items-center border-b border-gray-700 pb-3">
         <h1 class="text-xl font-bold text-indigo-400">Admin Dashboard RianShop</h1>
-        <button onclick="logout()" class="text-xs bg-red-600 px-3 py-1.5 rounded-lg font-semibold">Logout</button>
+        <button onclick="logout()" class="text-xs bg-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-700">Logout</button>
     </div>
 
-    <div class="bg-slate-800 p-4 rounded-xl space-y-3">
-        <h3 class="font-bold text-md text-indigo-300">Pengaturan Gateway & API Keys</h3>
+    <!-- Section 1: Form Penambahan Produk Katalog -->
+    <div class="bg-slate-800 p-4 rounded-xl space-y-3 shadow-lg border border-gray-700">
+        <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle"></i> Tambah / Edit Produk Katalog
+        </h3>
+        <div>
+            <label class="text-xs text-gray-400">Nama Produk:</label>
+            <input type="text" id="prodName" placeholder="cth: Server Linode" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <div>
+                <label class="text-xs text-gray-400">Harga (Rp):</label>
+                <input type="number" id="prodPrice" placeholder="85000" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            </div>
+            <div>
+                <label class="text-xs text-gray-400">Stok:</label>
+                <input type="number" id="prodStock" placeholder="10" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            </div>
+        </div>
+        <div>
+            <label class="text-xs text-gray-400">URL Gambar Produk:</label>
+            <input type="text" id="prodImage" placeholder="https://..." class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+        </div>
+        <button onclick="saveProduct()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-lg text-sm transition">
+            Simpan Produk
+        </button>
+    </div>
+
+    <!-- Section 2: Daftar Produk Katalog -->
+    <div class="bg-slate-800 p-4 rounded-xl space-y-3 shadow-lg border border-gray-700">
+        <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-boxes-stacked"></i> Daftar Produk Tersedia
+        </h3>
+        <div id="adminProductList" class="space-y-2">
+            <p class="text-xs text-gray-400">Memuat daftar produk...</p>
+        </div>
+    </div>
+
+    <!-- Section 3: Pengaturan Gateway & API Keys -->
+    <div class="bg-slate-800 p-4 rounded-xl space-y-3 shadow-lg border border-gray-700">
+        <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-sliders"></i> Pengaturan Gateway & API Keys
+        </h3>
         <div>
             <label class="text-xs text-gray-400">Casaku Merchant ID (qr_id):</label>
             <input type="text" id="merchant_id" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
@@ -31,21 +74,99 @@
             <label class="text-xs text-gray-400">URL Direct File Musik (.mp3):</label>
             <input type="text" id="bg_music" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
         </div>
-        <button onclick="saveSettings()" class="w-full py-2 bg-emerald-600 font-bold rounded-lg text-sm">Simpan Pengaturan</button>
+        <button onclick="saveSettings()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-lg text-sm transition">
+            Simpan Pengaturan
+        </button>
     </div>
 
     <script>
         const token = localStorage.getItem('adminToken');
 
-        async function loadSettings() {
-            const res = await fetch('/api/admin/settings', {
+        async function initAdmin() {
+            loadSettings();
+            loadAdminProducts();
+        }
+
+        async function loadAdminProducts() {
+            const container = document.getElementById('adminProductList');
+            try {
+                const res = await fetch('/api/products');
+                const products = await res.json();
+                if (!products.length) {
+                    container.innerHTML = '<p class="text-xs text-gray-400">Belum ada produk.</p>';
+                    return;
+                }
+                container.innerHTML = products.map(p => `
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-900 border border-gray-700 text-xs">
+                        <div class="flex items-center gap-2">
+                            <img src="${p.image || 'https://via.placeholder.com/50'}" class="w-8 h-8 object-cover rounded">
+                            <div>
+                                <p class="font-bold">${p.name}</p>
+                                <p class="text-indigo-400">Rp ${Number(p.price).toLocaleString('id-ID')} | Stok: ${p.stock}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteProduct(${p.id})" class="px-2 py-1 bg-red-600/80 hover:bg-red-600 rounded text-[10px] font-semibold">Hapus</button>
+                    </div>
+                `).join('');
+            } catch(e) {
+                container.innerHTML = '<p class="text-xs text-red-400">Gagal memuat produk.</p>';
+            }
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('prodName').value;
+            const price = document.getElementById('prodPrice').value;
+            const stock = document.getElementById('prodStock').value;
+            const image = document.getElementById('prodImage').value;
+
+            if (!name || !price || !stock) return alert("Isi nama, harga, dan stok!");
+
+            const res = await fetch('/api/admin/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, price: Number(price), stock: Number(stock), image })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Produk berhasil ditambahkan!");
+                document.getElementById('prodName').value = '';
+                document.getElementById('prodPrice').value = '';
+                document.getElementById('prodStock').value = '';
+                document.getElementById('prodImage').value = '';
+                loadAdminProducts();
+            } else {
+                alert(data.message || "Gagal menambah produk");
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("Yakin ingin menghapus produk ini?")) return;
+            const res = await fetch(`/api/admin/products/${id}`, {
+                method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const config = await res.json();
-            if (config.merchant_id) document.getElementById('merchant_id').value = config.merchant_id;
-            if (config.api_key) document.getElementById('api_key').value = config.api_key;
-            if (config.atlantic_key) document.getElementById('atlantic_key').value = config.atlantic_key;
-            if (config.bg_music) document.getElementById('bg_music').value = config.bg_music;
+            const data = await res.json();
+            if (data.success) {
+                loadAdminProducts();
+            } else {
+                alert(data.message || "Gagal menghapus");
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/admin/settings', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const config = await res.json();
+                if (config.merchant_id) document.getElementById('merchant_id').value = config.merchant_id;
+                if (config.api_key) document.getElementById('api_key').value = config.api_key;
+                if (config.atlantic_key) document.getElementById('atlantic_key').value = config.atlantic_key;
+                if (config.bg_music) document.getElementById('bg_music').value = config.bg_music;
+            } catch(e) {}
         }
 
         async function saveSettings() {
@@ -71,7 +192,8 @@
             window.location.reload();
         }
 
-        loadSettings();
+        initAdmin();
     </script>
 </body>
 </html>
+                
