@@ -233,13 +233,13 @@ app.get('/api/products', async (req, res) => {
 });
 
 // Transaksi Checkout Casaku
-app.post('/api/create-transaction', async (req, res) => {
+app.post('/api/generate/qris', async (req, res) => {
     const { cart, phone } = req.body;
     if (!cart || cart.length === 0 || !phone) return res.status(400).json({ message: "Data tidak lengkap" });
 
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
-    const merchantId = config.merchant_id || process.env.CASAKU_MERCHANT_ID;
+    const merchantId = config.id || process.env.CASAKU_MERCHANT_ID;
 
     let totalAmount = 0, itemsName = [];
     for (let item of cart) {
