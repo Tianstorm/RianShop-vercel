@@ -10,89 +10,168 @@
 </head>
 <body class="p-4 max-w-xl mx-auto space-y-6 pb-20">
 
-    <div class="flex justify-between items-center border-b border-gray-700 pb-3">
-        <h1 class="text-xl font-bold text-indigo-400">Admin Dashboard RianShop</h1>
-        <button onclick="logout()" class="text-xs bg-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-700">Logout</button>
-    </div>
-
-    <!-- Section 1: Tambah Produk Katalog -->
-    <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-700">
-        <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
-            <i class="fa-solid fa-plus-circle"></i> Tambah Produk Katalog
-        </h3>
-        <input type="text" id="prodName" placeholder="Nama Produk" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
-        <div class="grid grid-cols-2 gap-2">
-            <input type="number" id="prodPrice" placeholder="Harga (Rp)" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
-            <input type="number" id="prodStock" placeholder="Stok" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+    <!-- Form Login Admin (Tampil jika belum login) -->
+    <div id="loginFormSection" class="bg-slate-800 p-6 rounded-2xl shadow-xl border border-gray-700 space-y-4 my-12">
+        <div class="text-center space-y-1">
+            <h2 class="text-xl font-bold text-indigo-400">Login Admin RianShop</h2>
+            <p class="text-xs text-gray-400">Masukkan akun administrator kamu</p>
         </div>
-        <input type="text" id="prodImage" placeholder="URL Gambar Produk" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
-        <button onclick="saveProduct()" class="w-full py-2 bg-indigo-600 font-bold rounded-lg text-sm">Simpan Produk</button>
+        <div class="space-y-3">
+            <div>
+                <label class="text-xs text-gray-400">Username:</label>
+                <input type="text" id="adminUsername" placeholder="Username Admin" class="w-full p-2.5 rounded-lg bg-slate-900 border border-gray-700 text-sm focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+                <label class="text-xs text-gray-400">Password:</label>
+                <input type="password" id="adminPassword" placeholder="••••••••" class="w-full p-2.5 rounded-lg bg-slate-900 border border-gray-700 text-sm focus:outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="loginAdmin()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-sm transition">
+                Masuk Dashboard
+            </button>
+        </div>
     </div>
 
-    <!-- Section 2: Daftar Produk Katalog -->
-    <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-700">
-        <h3 class="font-bold text-md text-indigo-300"><i class="fa-solid fa-boxes-stacked"></i> Daftar Produk Tersedia</h3>
-        <div id="adminProductList" class="space-y-2"><p class="text-xs text-gray-400">Memuat produk...</p></div>
-    </div>
+    <!-- Main Dashboard Section (Tampil jika sudah login) -->
+    <div id="dashboardSection" class="hidden space-y-6">
 
-    <!-- Section 3: MANAJEMEN PLAYLIST MUSIK (TAMBAH LINK / UPLOAD FILE) -->
-    <div class="bg-slate-800 p-4 rounded-xl space-y-4 border border-indigo-500/40">
-        <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
-            <i class="fa-solid fa-compact-disc"></i> Manajemen Playlist Musik
-        </h3>
+        <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+            <h1 class="text-xl font-bold text-indigo-400">Admin Dashboard RianShop</h1>
+            <button onclick="logout()" class="text-xs bg-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-700">Logout</button>
+        </div>
 
-        <!-- Option A: Tambah via Link URL -->
-        <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-gray-700">
-            <p class="text-xs font-semibold text-gray-300">Option 1: Tambah via Link URL Direct MP3</p>
-            <input type="text" id="songTitleInput" placeholder="Judul Musik" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-xs">
-            <input type="text" id="songUrlInput" placeholder="https://domain.com/music.mp3" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-xs">
-            <button onclick="addSongFromUrl()" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded">
-                + Tambah via Link URL
+        <!-- Section 1: Tambah Produk Katalog -->
+        <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-700 shadow-lg">
+            <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle"></i> Tambah Produk Katalog
+            </h3>
+            <input type="text" id="prodName" placeholder="Nama Produk" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="number" id="prodPrice" placeholder="Harga (Rp)" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+                <input type="number" id="prodStock" placeholder="Stok" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            </div>
+            <input type="text" id="prodImage" placeholder="URL Gambar Produk" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            <button onclick="saveProduct()" class="w-full py-2 bg-indigo-600 font-bold rounded-lg text-sm">Simpan Produk</button>
+        </div>
+
+        <!-- Section 2: Daftar Produk Katalog -->
+        <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-700 shadow-lg">
+            <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-boxes-stacked"></i> Daftar Produk Tersedia
+            </h3>
+            <div id="adminProductList" class="space-y-2"><p class="text-xs text-gray-400">Memuat produk...</p></div>
+        </div>
+
+        <!-- Section 3: MANAJEMEN PLAYLIST MUSIK -->
+        <div class="bg-slate-800 p-4 rounded-xl space-y-4 border border-indigo-500/40 shadow-lg">
+            <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-compact-disc"></i> Manajemen Playlist Musik
+            </h3>
+
+            <!-- Option A: Tambah via Link URL -->
+            <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-gray-700">
+                <p class="text-xs font-semibold text-gray-300">Option 1: Tambah via Link URL Direct MP3</p>
+                <input type="text" id="songTitleInput" placeholder="Judul Musik" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-xs">
+                <input type="text" id="songUrlInput" placeholder="https://domain.com/music.mp3" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-xs">
+                <button onclick="addSongFromUrl()" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded">
+                    + Tambah via Link URL
+                </button>
+            </div>
+
+            <!-- Option B: Upload File dari HP/PC -->
+            <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-gray-700">
+                <p class="text-xs font-semibold text-gray-300">Option 2: Upload File Musik dari HP/PC (.mp3)</p>
+                <input type="text" id="fileSongTitle" placeholder="Judul Musik (Opsional)" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-xs">
+                <input type="file" id="audioFileInput" accept="audio/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:font-semibold">
+                <button onclick="uploadAudioFile()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded">
+                    Upload & Tambahkan File
+                </button>
+            </div>
+
+            <!-- Daftar Urutan Musik saat ini -->
+            <div class="space-y-2">
+                <p class="text-xs font-bold text-gray-300">Daftar Urutan Musik Aktif (Tampil di Web):</p>
+                <div id="adminPlaylist" class="space-y-1.5"></div>
+            </div>
+
+            <button onclick="savePlaylistToServer()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-lg text-xs transition">
+                Simpan Urutan Playlist ke Web
             </button>
         </div>
 
-        <!-- Option B: Upload File dari Perangkat HP/PC -->
-        <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-gray-700">
-            <p class="text-xs font-semibold text-gray-300">Option 2: Upload File Musik dari HP/PC (.mp3)</p>
-            <input type="text" id="fileSongTitle" placeholder="Judul Musik (Opsional)" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-xs">
-            <input type="file" id="audioFileInput" accept="audio/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:font-semibold">
-            <button onclick="uploadAudioFile()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded">
-                Upload & Tambahkan File
-            </button>
+        <!-- Section 4: Pengaturan Keys -->
+        <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-700 shadow-lg">
+            <h3 class="font-bold text-md text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-key"></i> Pengaturan API Keys
+            </h3>
+            <div>
+                <label class="text-xs text-gray-400">Casaku Merchant ID (qr_id):</label>
+                <input type="text" id="merchant_id" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            </div>
+            <div>
+                <label class="text-xs text-gray-400">Casaku License Key:</label>
+                <input type="text" id="api_key" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            </div>
+            <div>
+                <label class="text-xs text-gray-400">Atlantic H2H API Key:</label>
+                <input type="text" id="atlantic_key" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
+            </div>
+            <button onclick="saveSettings()" class="w-full py-2 bg-emerald-600 font-bold rounded-lg text-sm">Simpan API Keys</button>
         </div>
 
-        <!-- Daftar Urutan Musik saat ini -->
-        <div class="space-y-2">
-            <p class="text-xs font-bold text-gray-300">Daftar Urutan Musik Aktif (Tampil di Web):</p>
-            <div id="adminPlaylist" class="space-y-1.5"></div>
-        </div>
-
-        <button onclick="savePlaylistToServer()" class="w-full py-2.5 bg-indigo-600 font-bold rounded-lg text-xs">
-            Simpan Urutan Playlist ke Web
-        </button>
-    </div>
-
-    <!-- Section 4: Pengaturan Keys -->
-    <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-gray-700">
-        <h3 class="font-bold text-md text-indigo-300"><i class="fa-solid fa-key"></i> Pengaturan API Keys</h3>
-        <div>
-            <label class="text-xs text-gray-400">Casaku Merchant ID (qr_id):</label>
-            <input type="text" id="merchant_id" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
-        </div>
-        <div>
-            <label class="text-xs text-gray-400">Casaku License Key:</label>
-            <input type="text" id="api_key" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
-        </div>
-        <div>
-            <label class="text-xs text-gray-400">Atlantic H2H API Key:</label>
-            <input type="text" id="atlantic_key" class="w-full p-2 rounded bg-slate-900 border border-gray-700 text-sm">
-        </div>
-        <button onclick="saveSettings()" class="w-full py-2 bg-emerald-600 font-bold rounded-lg text-sm">Simpan API Keys</button>
     </div>
 
     <script>
-        const token = localStorage.getItem('adminToken');
+        let token = localStorage.getItem('adminToken');
         let currentPlaylist = [];
+
+        function initAuth() {
+            if (token) {
+                document.getElementById('loginFormSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('loginFormSection').classList.remove('hidden');
+                document.getElementById('dashboardSection').classList.add('hidden');
+            }
+        }
+
+        async function loginAdmin() {
+            const usernameInput = document.getElementById('adminUsername').value.trim();
+            const passwordInput = document.getElementById('adminPassword').value.trim();
+
+            if (!usernameInput || !passwordInput) return alert("Isi Username dan Password!");
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usernameInput, password: passwordInput })
+                });
+                const data = await res.json();
+                if (data.success && data.token) {
+                    localStorage.setItem('adminToken', data.token);
+                    token = data.token;
+                    initAuth();
+                } else {
+                    alert(data.message || "Login gagal! Username/Password salah.");
+                }
+            } catch(e) {
+                alert("Terjadi kesalahan jaringan.");
+            }
+        }
+
+        async function fetchWithAuth(url, options = {}) {
+            if (!options.headers) options.headers = {};
+            options.headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(url, options);
+            if (res.status === 401 || res.status === 403) {
+                alert("Sesi login kadaluarsa! Silakan login kembali.");
+                logout();
+                return null;
+            }
+            return res;
+        }
 
         async function initAdmin() {
             loadAdminProducts();
@@ -100,8 +179,9 @@
         }
 
         async function loadSettings() {
+            const res = await fetchWithAuth('/api/admin/settings');
+            if (!res) return;
             try {
-                const res = await fetch('/api/admin/settings', { headers: { 'Authorization': `Bearer ${token}` } });
                 const config = await res.json();
                 if (config.merchant_id) document.getElementById('merchant_id').value = config.merchant_id;
                 if (config.api_key) document.getElementById('api_key').value = config.api_key;
@@ -159,7 +239,7 @@
                 document.getElementById('fileSongTitle').value = '';
                 fileInput.value = '';
                 renderAdminPlaylist();
-                alert("File audio berhasil diunggah ke daftar playlist!");
+                alert("File audio berhasil diunggah!");
             };
             reader.readAsDataURL(file);
         }
@@ -179,13 +259,15 @@
         }
 
         async function savePlaylistToServer() {
-            const res = await fetch('/api/admin/settings', {
+            const res = await fetchWithAuth('/api/admin/settings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ playlist_data: JSON.stringify(currentPlaylist) })
             });
-            const data = await res.json();
-            alert(data.message || "Playlist berhasil diperbarui di website!");
+            if (res) {
+                const data = await res.json();
+                alert(data.message || "Playlist berhasil disimpan ke website!");
+            }
         }
 
         async function loadAdminProducts() {
@@ -208,18 +290,20 @@
             const stock = document.getElementById('prodStock').value;
             const image = document.getElementById('prodImage').value;
 
-            const res = await fetch('/api/admin/products', {
+            const res = await fetchWithAuth('/api/admin/products', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, price: Number(price), stock: Number(stock), image })
             });
-            const data = await res.json();
-            if (data.success) { loadAdminProducts(); alert("Produk Ditambah!"); }
+            if (res) {
+                const data = await res.json();
+                if (data.success) { loadAdminProducts(); alert("Produk Ditambah!"); }
+            }
         }
 
         async function deleteProduct(id) {
-            await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            loadAdminProducts();
+            const res = await fetchWithAuth(`/api/admin/products/${id}`, { method: 'DELETE' });
+            if (res) loadAdminProducts();
         }
 
         async function saveSettings() {
@@ -227,18 +311,24 @@
             const api_key = document.getElementById('api_key').value;
             const atlantic_key = document.getElementById('atlantic_key').value;
 
-            const res = await fetch('/api/admin/settings', {
+            const res = await fetchWithAuth('/api/admin/settings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ merchant_id, api_key, atlantic_key })
             });
-            const data = await res.json();
-            alert(data.message || "Saved!");
+            if (res) {
+                const data = await res.json();
+                alert(data.message || "API Keys Tersimpan!");
+            }
         }
 
-        function logout() { localStorage.removeItem('adminToken'); window.location.reload(); }
+        function logout() {
+            localStorage.removeItem('adminToken');
+            token = null;
+            initAuth();
+        }
 
-        initAdmin();
+        initAuth();
     </script>
 </body>
 </html>
