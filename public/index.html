@@ -29,78 +29,107 @@
 
     <audio id="bgAudio" loop></audio>
 
-    <main class="max-w-md mx-auto p-4 space-y-6">
+    <main class="max-w-md mx-auto p-4 space-y-5">
 
-        <!-- Navigation Tabs -->
-        <div class="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
-            <button onclick="switchTab('katalog')" id="tab-katalog" class="p-2.5 glass rounded-xl text-indigo-400 border border-indigo-500 font-bold">
-                <i class="fa-solid fa-store block text-base mb-1"></i> Katalog
+        <!-- BILAH NAVIGASI UTAMA (MENU PRODUK vs MENU TOPUP) -->
+        <div class="grid grid-cols-2 gap-2 glass p-1.5 rounded-2xl shadow-md border border-gray-700">
+            <button onclick="switchMainNav('produk')" id="nav-btn-produk" class="py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow">
+                <i class="fa-solid fa-store"></i> Menu Produk
             </button>
-            <button onclick="switchTab('prabayar')" id="tab-prabayar" class="p-2.5 glass rounded-xl text-gray-400">
-                <i class="fa-solid fa-mobile-screen block text-base mb-1"></i> Prabayar
-            </button>
-            <button onclick="switchTab('pascabayar')" id="tab-pascabayar" class="p-2.5 glass rounded-xl text-gray-400">
-                <i class="fa-solid fa-file-invoice-dollar block text-base mb-1"></i> Pascabayar
-            </button>
-            <button onclick="switchTab('transfer')" id="tab-transfer" class="p-2.5 glass rounded-xl text-gray-400">
-                <i class="fa-solid fa-money-bill-transfer block text-base mb-1"></i> Transfer Bank
-            </button>
-            <button onclick="switchTab('deposit')" id="tab-deposit" class="p-2.5 glass rounded-xl text-gray-400 col-span-2">
-                <i class="fa-solid fa-wallet block text-base mb-1"></i> Deposit Saldo Atlantic
+            <button onclick="switchMainNav('topup')" id="nav-btn-topup" class="py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white">
+                <i class="fa-solid fa-wallet"></i> Menu Top Up
             </button>
         </div>
 
-        <!-- Section 1: Katalog Produk -->
-        <section id="sec-katalog">
-            <h2 class="text-sm font-bold mb-3 text-indigo-300 flex items-center gap-2">
-                <i class="fa-solid fa-fire"></i> Katalog Produk RianShop
-            </h2>
+        <!-- ==================== MENU PRODUK ==================== -->
+        <section id="main-sec-produk">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-fire"></i> Katalog Produk RianShop
+                </h2>
+                <span class="text-[10px] text-gray-400">Stok Otomatis</span>
+            </div>
             <div id="productGrid" class="grid grid-cols-2 gap-3">
                 <p class="col-span-2 text-center text-sm text-gray-400 py-6">Memuat produk...</p>
             </div>
         </section>
 
-        <!-- Section 2: Atlantic Prabayar -->
-        <section id="sec-prabayar" class="hidden glass p-4 rounded-2xl space-y-3">
-            <h3 class="font-bold text-sm text-indigo-300">Isi Pulsa / Data / Game (Atlantic H2H)</h3>
-            <input type="text" id="praTarget" placeholder="Nomor HP / ID Game" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="text" id="praCode" placeholder="Kode Produk (cth: S10, TSEL5)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="number" id="praPhone" placeholder="No. WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <button onclick="orderPrabayar()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs">Beli Sekarang</button>
-        </section>
+        <!-- ==================== MENU TOP UP & LAYANAN ==================== -->
+        <section id="main-sec-topup" class="hidden space-y-4">
+            
+            <!-- SUB-BILAH NAVIGASI TOP UP -->
+            <div class="grid grid-cols-4 gap-1.5 text-center text-[11px] font-semibold glass p-1.5 rounded-xl border border-gray-800">
+                <button onclick="switchTopUpSub('prabayar')" id="subtab-prabayar" class="py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40">
+                    Prabayar
+                </button>
+                <button onclick="switchTopUpSub('pascabayar')" id="subtab-pascabayar" class="py-2 rounded-lg text-gray-400 hover:text-white">
+                    Pascabayar
+                </button>
+                <button onclick="switchTopUpSub('transfer')" id="subtab-transfer" class="py-2 rounded-lg text-gray-400 hover:text-white">
+                    Transfer
+                </button>
+                <button onclick="switchTopUpSub('deposit')" id="subtab-deposit" class="py-2 rounded-lg text-gray-400 hover:text-white">
+                    Deposit
+                </button>
+            </div>
 
-        <!-- Section 3: Atlantic Pascabayar -->
-        <section id="sec-pascabayar" class="hidden glass p-4 rounded-2xl space-y-3">
-            <h3 class="font-bold text-sm text-indigo-300">Cek Tagihan (PLN / BPJS / PDAM)</h3>
-            <input type="text" id="pasCode" placeholder="Kode Tagihan (cth: PLNPOST)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="text" id="pasTarget" placeholder="Nomor Pelanggan" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <button onclick="checkPascabayar()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs">Cek Tagihan</button>
-        </section>
+            <!-- Sub 1: Prabayar -->
+            <div id="sub-sec-prabayar" class="glass p-4 rounded-2xl space-y-3">
+                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen"></i> Isi Pulsa / Data / Game
+                </h3>
+                <input type="text" id="praTarget" placeholder="Nomor HP / ID Game Target" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="text" id="praCode" placeholder="Kode Produk (cth: S10, TSEL5)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="number" id="praPhone" placeholder="No. WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <button onclick="orderPrabayar()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
+                    Beli Sekarang
+                </button>
+            </div>
 
-        <!-- Section 4: Transfer Bank -->
-        <section id="sec-transfer" class="hidden glass p-4 rounded-2xl space-y-3">
-            <h3 class="font-bold text-sm text-indigo-300">Transfer Bank via Atlantic</h3>
-            <input type="text" id="trfBank" placeholder="Kode Bank (cth: bca, bri)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="text" id="trfAccount" placeholder="Nomor Rekening" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="number" id="trfAmount" placeholder="Nominal Transfer (Rp)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="number" id="trfPhone" placeholder="No WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <button onclick="processTransfer()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs">Proses Transfer</button>
-        </section>
+            <!-- Sub 2: Pascabayar -->
+            <div id="sub-sec-pascabayar" class="hidden glass p-4 rounded-2xl space-y-3">
+                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Cek & Bayar Tagihan (PLN / BPJS / PDAM)
+                </h3>
+                <input type="text" id="pasCode" placeholder="Kode Tagihan (cth: PLNPOST)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="text" id="pasTarget" placeholder="Nomor ID Pelanggan" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <button onclick="checkPascabayar()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
+                    Cek Tagihan
+                </button>
+            </div>
 
-        <!-- Section 5: Deposit Atlantic -->
-        <section id="sec-deposit" class="hidden glass p-4 rounded-2xl space-y-3">
-            <h3 class="font-bold text-sm text-indigo-300">Deposit Saldo Atlantic</h3>
-            <input type="number" id="depNominal" placeholder="Nominal Deposit (Rp)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <input type="text" id="depMethod" placeholder="Metode Pembayaran (cth: qris, bca)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
-            <button onclick="processDeposit()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs">Request Deposit</button>
+            <!-- Sub 3: Transfer Bank -->
+            <div id="sub-sec-transfer" class="hidden glass p-4 rounded-2xl space-y-3">
+                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-money-bill-transfer"></i> Transfer Bank via Atlantic H2H
+                </h3>
+                <input type="text" id="trfBank" placeholder="Kode Bank (cth: bca, bri, mandiri)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="text" id="trfAccount" placeholder="Nomor Rekening Tujuan" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="number" id="trfAmount" placeholder="Nominal Transfer (Rp)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="number" id="trfPhone" placeholder="No WhatsApp Notifikasi" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <button onclick="processTransfer()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
+                    Proses Transfer
+                </button>
+            </div>
+
+            <!-- Sub 4: Deposit Saldo -->
+            <div id="sub-sec-deposit" class="hidden glass p-4 rounded-2xl space-y-3">
+                <h3 class="font-bold text-xs text-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-wallet"></i> Deposit Saldo Atlantic H2H
+                </h3>
+                <input type="number" id="depNominal" placeholder="Nominal Deposit (Rp)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <input type="text" id="depMethod" placeholder="Metode Pembayaran (cth: qris, bca)" class="w-full p-2.5 rounded-xl bg-slate-900 border border-gray-700 text-sm">
+                <button onclick="processDeposit()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl text-xs transition">
+                    Request Deposit
+                </button>
+            </div>
+
         </section>
 
     </main>
 
     <!-- FLOATING MUSIC PLAYER (MELAYANG DI BAWAH) -->
     <div id="musicFloatingContainer" class="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-        
-        <!-- Panel List & Control Musik -->
         <div id="musicPanel" class="hidden glass p-3.5 rounded-2xl shadow-2xl w-72 space-y-3 border border-indigo-500/30 transition-all duration-300">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
                 <span class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
@@ -108,14 +137,10 @@
                 </span>
                 <button onclick="toggleMusicWidget()" class="text-gray-400 hover:text-white text-xs">&times;</button>
             </div>
-
-            <!-- Track Info -->
             <div>
                 <p id="currentSongTitle" class="text-xs font-semibold text-gray-200 line-clamp-1">Memuat Musik...</p>
                 <p class="text-[10px] text-gray-400 mt-0.5">RianShop Audio Player</p>
             </div>
-
-            <!-- Playback Controller Controls -->
             <div class="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-gray-800">
                 <button onclick="prevSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-backward-step"></i></button>
                 <button onclick="togglePlayPause()" id="playPauseBtn" class="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs transition">
@@ -123,14 +148,10 @@
                 </button>
                 <button onclick="nextSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-forward-step"></i></button>
             </div>
-
-            <!-- List Musik / Playlist -->
             <div class="space-y-1 max-h-32 overflow-y-auto pr-1">
                 <p class="text-[10px] font-bold text-gray-400 mb-1">Daftar Putar:</p>
                 <div id="playlistContainer" class="space-y-1"></div>
             </div>
-
-            <!-- Custom URL Music Input -->
             <div class="pt-1 border-t border-gray-800 space-y-1.5">
                 <p class="text-[10px] text-gray-400">Putar dari Link MP3 Sendiri:</p>
                 <div class="flex gap-1">
@@ -140,7 +161,6 @@
             </div>
         </div>
 
-        <!-- Tombol Icon Melayang Keluar-Masuk -->
         <button onclick="toggleMusicWidget()" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-105 border-2 border-indigo-400/50">
             <i class="fa-solid fa-music text-base"></i>
         </button>
@@ -194,7 +214,6 @@
         let cart = [];
         let pollingInterval = null;
 
-        // Default Playlist Musik
         let playlist = [
             { title: "Musik Default Admin", url: "" },
             { title: "Lofi Beats Chill", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
@@ -216,10 +235,38 @@
                 if (data.bg_music) {
                     playlist[0].url = data.bg_music;
                     changeSong(0);
-                } else {
-                    changeSong(1);
-                }
+                } else { changeSong(1); }
             } catch(e) { changeSong(1); }
+        }
+
+        // Handler Navigasi Utama (Menu Produk vs Menu Top Up)
+        function switchMainNav(target) {
+            const btnProduk = document.getElementById('nav-btn-produk');
+            const btnTopup = document.getElementById('nav-btn-topup');
+            const secProduk = document.getElementById('main-sec-produk');
+            const secTopup = document.getElementById('main-sec-topup');
+
+            if (target === 'produk') {
+                secProduk.classList.remove('hidden');
+                secTopup.classList.add('hidden');
+                btnProduk.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
+                btnTopup.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
+            } else {
+                secProduk.classList.add('hidden');
+                secTopup.classList.remove('hidden');
+                btnTopup.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow";
+                btnProduk.className = "py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition text-gray-400 hover:text-white";
+            }
+        }
+
+        // Handler Sub-Navigasi Top Up
+        function switchTopUpSub(subName) {
+            ['prabayar', 'pascabayar', 'transfer', 'deposit'].forEach(s => {
+                document.getElementById(`sub-sec-${s}`).classList.add('hidden');
+                document.getElementById(`subtab-${s}`).className = "py-2 rounded-lg text-gray-400 hover:text-white";
+            });
+            document.getElementById(`sub-sec-${subName}`).classList.remove('hidden');
+            document.getElementById(`subtab-${subName}`).className = "py-2 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40";
         }
 
         function toggleMusicWidget() {
@@ -285,15 +332,6 @@
             changeSong(playlist.length - 1);
             if (!isPlaying) togglePlayPause();
             alert("Musik kustom berhasil ditambahkan!");
-        }
-
-        function switchTab(tabName) {
-            ['katalog', 'prabayar', 'pascabayar', 'transfer', 'deposit'].forEach(t => {
-                document.getElementById(`sec-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = "p-2.5 glass rounded-xl text-gray-400";
-            });
-            document.getElementById(`sec-${tabName}`).classList.remove('hidden');
-            document.getElementById(`tab-${tabName}`).className = "p-2.5 glass rounded-xl text-indigo-400 border border-indigo-500 font-bold";
         }
 
         async function loadProducts() {
@@ -419,7 +457,6 @@
             document.getElementById('qrisModal').classList.add('hidden');
         }
 
-        // Atlantic H2H Handlers
         async function orderPrabayar() {
             const target = document.getElementById('praTarget').value;
             const code = document.getElementById('praCode').value;
@@ -448,7 +485,6 @@
             const data = await res.json();
             alert(JSON.stringify(data));
         }
-
         async function processTransfer() {
             const bank_code = document.getElementById('trfBank').value;
             const account_no = document.getElementById('trfAccount').value;
