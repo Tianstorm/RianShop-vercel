@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .glass { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-28">
 
     <!-- Header Navigation -->
     <header class="glass sticky top-0 z-40 p-4 flex justify-between items-center shadow-lg">
@@ -20,11 +20,6 @@
             <i class="fa-solid fa-bolt"></i> RianShop
         </h1>
         <div class="flex items-center gap-3">
-            <!-- Floating Music Button -->
-            <button id="musicToggle" onclick="toggleAudio()" class="p-2.5 glass rounded-full text-sm text-indigo-400 hover:text-indigo-300 shadow-md transition">
-                <i id="musicIcon" class="fa-solid fa-music"></i>
-            </button>
-            <!-- Cart Button -->
             <button id="cartBtn" onclick="toggleCartModal()" class="p-2.5 glass rounded-full relative text-gray-300 hover:text-white transition">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
@@ -36,9 +31,9 @@
 
     <main class="max-w-md mx-auto p-4 space-y-6">
 
-        <!-- Navigation Tabs (Katalog & Atlantic PPOB) -->
+        <!-- Navigation Tabs -->
         <div class="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
-            <button onclick="switchTab('katalog')" id="tab-katalog" class="p-2.5 glass rounded-xl text-indigo-400 border-indigo-500 font-bold">
+            <button onclick="switchTab('katalog')" id="tab-katalog" class="p-2.5 glass rounded-xl text-indigo-400 border border-indigo-500 font-bold">
                 <i class="fa-solid fa-store block text-base mb-1"></i> Katalog
             </button>
             <button onclick="switchTab('prabayar')" id="tab-prabayar" class="p-2.5 glass rounded-xl text-gray-400">
@@ -102,6 +97,55 @@
 
     </main>
 
+    <!-- FLOATING MUSIC PLAYER (MELAYANG DI BAWAH) -->
+    <div id="musicFloatingContainer" class="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+        
+        <!-- Panel List & Control Musik -->
+        <div id="musicPanel" class="hidden glass p-3.5 rounded-2xl shadow-2xl w-72 space-y-3 border border-indigo-500/30 transition-all duration-300">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                <span class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-compact-disc fa-spin"></i> Music Player
+                </span>
+                <button onclick="toggleMusicWidget()" class="text-gray-400 hover:text-white text-xs">&times;</button>
+            </div>
+
+            <!-- Track Info -->
+            <div>
+                <p id="currentSongTitle" class="text-xs font-semibold text-gray-200 line-clamp-1">Memuat Musik...</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">RianShop Audio Player</p>
+            </div>
+
+            <!-- Playback Controller Controls -->
+            <div class="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-gray-800">
+                <button onclick="prevSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-backward-step"></i></button>
+                <button onclick="togglePlayPause()" id="playPauseBtn" class="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs transition">
+                    <i id="playIcon" class="fa-solid fa-play"></i>
+                </button>
+                <button onclick="nextSong()" class="text-xs text-gray-300 hover:text-indigo-400 p-1"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+
+            <!-- List Musik / Playlist -->
+            <div class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                <p class="text-[10px] font-bold text-gray-400 mb-1">Daftar Putar:</p>
+                <div id="playlistContainer" class="space-y-1"></div>
+            </div>
+
+            <!-- Custom URL Music Input -->
+            <div class="pt-1 border-t border-gray-800 space-y-1.5">
+                <p class="text-[10px] text-gray-400">Putar dari Link MP3 Sendiri:</p>
+                <div class="flex gap-1">
+                    <input type="text" id="customAudioUrl" placeholder="https://.../music.mp3" class="w-full p-1.5 rounded-lg bg-slate-900 border border-gray-700 text-[11px]">
+                    <button onclick="playCustomUrl()" class="px-2.5 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold rounded-lg">Set</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol Icon Melayang Keluar-Masuk -->
+        <button onclick="toggleMusicWidget()" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-105 border-2 border-indigo-400/50">
+            <i class="fa-solid fa-music text-base"></i>
+        </button>
+    </div>
+
     <!-- Modal Cart & Checkout -->
     <div id="cartModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center">
         <div class="glass w-full max-w-md rounded-t-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
@@ -149,11 +193,20 @@
     <script>
         let cart = [];
         let pollingInterval = null;
+
+        // Default Playlist Musik
+        let playlist = [
+            { title: "Musik Default Admin", url: "" },
+            { title: "Lofi Beats Chill", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { title: "Ambient Relaxing", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
+        ];
+        let currentTrackIndex = 0;
         let isPlaying = false;
 
         async function init() {
             loadPublicSettings();
             loadProducts();
+            renderPlaylist();
         }
 
         async function loadPublicSettings() {
@@ -161,25 +214,77 @@
                 const res = await fetch('/api/settings/public');
                 const data = await res.json();
                 if (data.bg_music) {
-                    const audio = document.getElementById('bgAudio');
-                    audio.src = data.bg_music;
+                    playlist[0].url = data.bg_music;
+                    changeSong(0);
+                } else {
+                    changeSong(1);
                 }
-            } catch(e) {}
+            } catch(e) { changeSong(1); }
         }
 
-        function toggleAudio() {
+        function toggleMusicWidget() {
+            document.getElementById('musicPanel').classList.toggle('hidden');
+        }
+
+        function renderPlaylist() {
+            const container = document.getElementById('playlistContainer');
+            container.innerHTML = playlist.map((song, idx) => `
+                <button onclick="changeSong(${idx})" class="w-full text-left p-1.5 rounded-lg text-[11px] flex justify-between items-center ${idx === currentTrackIndex ? 'bg-indigo-600/30 text-indigo-300 font-bold' : 'hover:bg-slate-800 text-gray-400'}">
+                    <span class="line-clamp-1">${song.title}</span>
+                    ${idx === currentTrackIndex && isPlaying ? '<i class="fa-solid fa-volume-high text-[10px]"></i>' : ''}
+                </button>
+            `).join('');
+        }
+
+        function changeSong(index) {
+            currentTrackIndex = index;
+            const song = playlist[index];
             const audio = document.getElementById('bgAudio');
-            const icon = document.getElementById('musicIcon');
-            if (!audio.src) return alert("Musik belum diatur oleh admin!");
+            document.getElementById('currentSongTitle').innerText = song.title;
+            
+            if(song.url) {
+                audio.src = song.url;
+                if (isPlaying) audio.play();
+            }
+            renderPlaylist();
+        }
+
+        function togglePlayPause() {
+            const audio = document.getElementById('bgAudio');
+            const icon = document.getElementById('playIcon');
+            if (!audio.src) return alert("Pilih musik terlebih dahulu!");
 
             if (isPlaying) {
                 audio.pause();
-                icon.className = "fa-solid fa-music";
+                icon.className = "fa-solid fa-play";
             } else {
                 audio.play();
-                icon.className = "fa-solid fa-compact-disc fa-spin";
+                icon.className = "fa-solid fa-pause";
             }
             isPlaying = !isPlaying;
+            renderPlaylist();
+        }
+
+        function prevSong() {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            changeSong(currentTrackIndex);
+            if (isPlaying) document.getElementById('bgAudio').play();
+        }
+
+        function nextSong() {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            changeSong(currentTrackIndex);
+            if (isPlaying) document.getElementById('bgAudio').play();
+        }
+
+        function playCustomUrl() {
+            const url = document.getElementById('customAudioUrl').value.trim();
+            if (!url) return alert("Masukkan URL MP3!");
+            
+            playlist.push({ title: "Custom Audio URL", url: url });
+            changeSong(playlist.length - 1);
+            if (!isPlaying) togglePlayPause();
+            alert("Musik kustom berhasil ditambahkan!");
         }
 
         function switchTab(tabName) {
