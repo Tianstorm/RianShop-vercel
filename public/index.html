@@ -1,421 +1,208 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RianShop - Store Otomatis & Top-Up</title>
+    <title>RianShop - Digital Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] } } } }
-    </script>
     <style>
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .glow-effect:hover { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.4); }
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
-
-    <audio id="bgMusic" loop preload="auto">
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
-    </audio>
-
-    <header class="glass sticky top-0 z-40 border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
-            <a href="#" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white">
-                    <i class="fa-solid fa-bolt text-lg"></i>
-                </div>
-                <span class="text-xl font-extrabold text-white">RianShop</span>
-            </a>
-
-            <div class="flex items-center gap-3">
-                <div class="glass px-3 py-1.5 rounded-full flex items-center gap-3 border border-slate-700/60">
-                    <button id="musicToggleBtn" onclick="toggleMusic()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center">
-                        <i id="musicIcon" class="fa-solid fa-music text-xs"></i>
-                    </button>
-                    <div class="hidden sm:flex items-center gap-2 pr-1">
-                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.3" oninput="changeVolume(this.value)" class="w-16 h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-indigo-500">
-                    </div>
-                </div>
-
-                <button id="cartBtn" class="glass relative p-2.5 rounded-full text-slate-300">
-                    <i class="fa-solid fa-bag-shopping text-lg"></i>
-                    <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
-                </button>
-            </div>
-        </div>
+<body class="pb-24">
+    <header class="glass sticky top-0 z-40 p-4 flex justify-between items-center shadow-lg">
+        <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
+            <i class="fa-solid fa-bolt"></i> RianShop
+        </h1>
+        <button id="cartBtn" class="p-2 glass rounded-full relative text-gray-300 hover:text-white">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
+        </button>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-        <!-- Navigation Menu Store Otomatis H2H -->
-        <div class="flex flex-wrap gap-2 mb-8 justify-center">
-            <button onclick="switchTab('katalog')" id="tab-katalog" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-lg transition"><i class="fa-solid fa-store mr-1.5"></i> Katalog</button>
-            <button onclick="switchTab('prabayar')" id="tab-prabayar" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-mobile-screen mr-1.5"></i> Prabayar</button>
-            <button onclick="switchTab('pascabayar')" id="tab-pascabayar" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Pascabayar</button>
-            <button onclick="switchTab('transfer')" id="tab-transfer" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-money-bill-transfer mr-1.5"></i> Transfer Bank</button>
-            <button onclick="switchTab('deposit')" id="tab-deposit" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition"><i class="fa-solid fa-wallet mr-1.5"></i> Deposit</button>
-        </div>
-
-        <!-- 1. TAB KATALOG -->
-        <div id="section-katalog" class="tab-section">
-            <h2 class="text-lg font-bold text-white mb-6"><i class="fa-solid fa-fire text-indigo-400"></i> Katalog Produk RianShop</h2>
-            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
-                <div class="col-span-full py-12 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Memuat produk...</p></div>
+    <main class="max-w-md mx-auto p-4 space-y-6">
+        <section>
+            <h2 class="text-lg font-bold mb-3 text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-store"></i> Produk Digital
+            </h2>
+            <div id="productGrid" class="grid grid-cols-2 gap-3">
+                <p class="col-span-2 text-center text-sm text-gray-400 py-6">Memuat produk...</p>
             </div>
-        </div>
-
-        <!-- 2. TAB PRABAYAR (ATLANTIC H2H) -->
-        <div id="section-prabayar" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
-            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-mobile-screen text-indigo-400"></i> Isi Pulsa, Data & Game (Atlantic H2H)</h2>
-            <form onsubmit="handlePrabayarTrx(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kode Produk / Layanan</label>
-                    <input type="text" id="prabayarCode" placeholder="Contoh: TSEL10 / ML86" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor HP / ID Target</label>
-                    <input type="text" id="prabayarTarget" placeholder="Contoh: 081234567890" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor WhatsApp Pengirim Notifikasi</label>
-                    <input type="number" id="prabayarWa" placeholder="081234567890" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl">Beli Sekarang</button>
-            </form>
-        </div>
-
-        <!-- 3. TAB PASCABAYAR (ATLANTIC H2H) -->
-        <div id="section-pascabayar" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
-            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Cek Tagihan Pascabayar</h2>
-            <form onsubmit="handlePascabayarCek(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kode Produk (PLNPOST/BPJS/PDAM)</label>
-                    <input type="text" id="pascaCode" placeholder="Contoh: PLNPOST" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">ID Pelanggan / Nomor Tagihan</label>
-                    <input type="text" id="pascaTarget" placeholder="Masukkan ID Pelanggan" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl">Cek Tagihan</button>
-            </form>
-            <div id="pascaResult" class="mt-4 p-4 bg-slate-900 rounded-xl hidden text-xs space-y-2"></div>
-        </div>
-
-        <!-- 4. TAB TRANSFER BANK (ATLANTIC H2H) -->
-        <div id="section-transfer" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
-            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-money-bill-transfer text-indigo-400"></i> Kirim Uang / Transfer Bank</h2>
-            <form onsubmit="handleTransferTrx(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kode Bank Target</label>
-                    <input type="text" id="trfBankCode" placeholder="Contoh: BCA / BRI / MANDIRI" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor Rekening Tujuan</label>
-                    <input type="text" id="trfAccount" placeholder="Nomor Rekening" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nominal Transfer (Rp)</label>
-                    <input type="number" id="trfAmount" placeholder="Nominal" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor WhatsApp Pengirim</label>
-                    <input type="number" id="trfWa" placeholder="081234567890" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl">Proses Transfer</button>
-            </form>
-        </div>
-
-        <!-- 5. TAB DEPOSIT SALDO (ATLANTIC H2H) -->
-        <div id="section-deposit" class="tab-section hidden max-w-2xl mx-auto glass-card p-6 rounded-2xl">
-            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-wallet text-indigo-400"></i> Deposit Saldo Otomatis</h2>
-            <form onsubmit="handleDepositTrx(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nominal Deposit (Rp)</label>
-                    <input type="number" id="depNominal" placeholder="Minimal 10000" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Metode Pembayaran (QRIS / BANK)</label>
-                    <input type="text" id="depMethod" placeholder="QRIS / BCA / MANDIRI" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl">Buat Tiket Deposit</button>
-            </form>
-            <div id="depositResult" class="mt-4 p-4 bg-slate-900 rounded-xl hidden text-xs"></div>
-        </div>
-
+        </section>
     </main>
 
-    <!-- Modal Drawer Keranjang Belanja -->
-    <div id="cartModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex justify-end">
-        <div class="glass-card w-full max-w-md h-full p-6 flex flex-col justify-between border-l border-slate-800">
-            <div>
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-bold text-white">Detail Checkout</h2>
-                    <button id="closeCartBtn" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400">&times;</button>
-                </div>
-                <div id="cartItems" class="space-y-3 max-h-[45vh] overflow-y-auto pr-1 mb-6"></div>
-                <div class="border-t border-slate-800 pt-4">
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor WhatsApp Penerima:</label>
-                    <input type="number" id="userPhone" placeholder="Contoh: 081234567890" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm">
-                </div>
+    <!-- Modal Cart & Checkout -->
+    <div id="cartModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-end justify-center">
+        <div class="glass w-full max-w-md rounded-t-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+                <h3 class="font-bold text-lg">Detail Checkout</h3>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-white">&times;</button>
+            </div>
+            
+            <div id="cartItems" class="space-y-3"></div>
+
+            <div class="space-y-2 pt-2">
+                <label class="text-xs text-gray-400">Nomor WhatsApp Penerima:</label>
+                <input type="number" id="custPhone" placeholder="08xxxxxxxxxx" class="w-full p-2.5 rounded-lg bg-slate-900 border border-gray-700 text-sm focus:outline-none focus:border-indigo-500">
             </div>
 
-            <div class="border-t border-slate-800 pt-4 mt-auto">
-                <div class="flex justify-between mb-4">
-                    <span class="text-xs text-slate-400">Total Pembayaran:</span>
-                    <span id="cartTotal" class="text-xl font-extrabold text-indigo-400">Rp 0</span>
-                </div>
-                <button id="payBtn" onclick="processPayment()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl">Bayar Sekarang (Casaku)</button>
+            <div class="border-t border-gray-700 pt-3 flex justify-between items-center">
+                <span class="text-sm font-semibold">Total Pembayaran:</span>
+                <span id="totalAmount" class="text-lg font-bold text-indigo-400">Rp 0</span>
+            </div>
+
+            <button id="checkoutBtn" onclick="processCheckout()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl transition">
+                Bayar Sekarang (QRIS)
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Display QRIS & Polling -->
+    <div id="qrisModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass w-full max-w-sm rounded-2xl p-6 text-center space-y-4 relative">
+            <button onclick="closeQrisModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white">&times;</button>
+            <h3 class="font-bold text-lg text-indigo-300">Scan QRIS Untuk Membayar</h3>
+            <div class="bg-white p-4 rounded-xl inline-block mx-auto">
+                <canvas id="qrisCanvas"></canvas>
+            </div>
+            <p id="qrisTotal" class="text-xl font-black text-emerald-400">Rp 0</p>
+            <div class="flex items-center justify-center gap-2 text-xs text-indigo-400 animate-pulse pt-2">
+                <i class="fa-solid fa-spinner fa-spin"></i> Menunggu pembayaran kamu...
             </div>
         </div>
     </div>
 
     <script>
-        let products = [];
         let cart = [];
-        const bgMusic = document.getElementById('bgMusic');
-        const musicToggleBtn = document.getElementById('musicToggleBtn');
-        const musicIcon = document.getElementById('musicIcon');
-        let isPlaying = false;
+        let pollingInterval = null;
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-section').forEach(function(el) { el.classList.add('hidden'); });
-            document.querySelectorAll('[id^="tab-"]').forEach(function(el) {
-                el.classList.remove('bg-indigo-600', 'text-white');
-                el.classList.add('bg-slate-800', 'text-slate-300');
-            });
+        async function init() { loadProducts(); }
 
-            const sec = document.getElementById('section-' + tabName);
-            if (sec) sec.classList.remove('hidden');
-            const activeBtn = document.getElementById('tab-' + tabName);
-            if (activeBtn) {
-                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
-                activeBtn.classList.add('bg-indigo-600', 'text-white');
-            }
-        }
-
-        async function loadMusicConfig() {
-            try {
-                const res = await fetch('/api/settings/public');
-                const config = await res.json();
-                if (config.bg_music) {
-                    bgMusic.src = config.bg_music;
-                    bgMusic.load();
-                }
-            } catch (e) {}
-        }
-
-        function toggleMusic() {
-            if (isPlaying) {
-                bgMusic.pause();
-                musicIcon.className = "fa-solid fa-music text-xs text-slate-300";
-                musicToggleBtn.classList.remove("bg-indigo-600");
-                isPlaying = false;
-            } else {
-                bgMusic.play().then(function() {
-                    musicIcon.className = "fa-solid fa-compact-disc fa-spin text-xs text-white";
-                    musicToggleBtn.classList.add("bg-indigo-600");
-                    isPlaying = true;
-                });
-            }
-        }
-
-        function changeVolume(val) { bgMusic.volume = val; }
-
-        async function renderProducts() {
+        async function loadProducts() {
             const grid = document.getElementById('productGrid');
             try {
                 const res = await fetch('/api/products');
-                products = await res.json();
-                grid.innerHTML = '';
-                products.forEach(function(p) {
-                    const isOutOfStock = p.stock <= 0;
-                    const imgTag = p.image 
-                        ? `<img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-xl mb-3">`
-                        : `<div class="w-full h-36 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 text-3xl mb-3"><i class="fa-solid fa-box-open"></i></div>`;
-
-                    grid.innerHTML += `
-                        <div class="glass-card rounded-2xl p-4 glow-effect flex flex-col justify-between">
-                            <div>
-                                ${imgTag}
-                                <h3 class="font-bold text-white text-base mb-1">${p.name}</h3>
-                                <p class="text-indigo-400 font-extrabold text-lg mb-2">Rp ${p.price.toLocaleString('id-ID')}</p>
-                                <p class="text-xs ${isOutOfStock ? 'text-red-400' : 'text-slate-400'} mb-4">Stok: ${p.stock}</p>
-                            </div>
-                            <button onclick="addToCart(${p.id})" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-slate-800 text-slate-500' : 'bg-indigo-600 text-white'} font-semibold py-2.5 rounded-xl text-xs">
-                                ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
-                            </button>
-                        </div>
-                    `;
-                });
-            } catch (e) { 
-                grid.innerHTML = '<div class="col-span-full text-center text-red-400 py-6">Gagal memuat produk.</div>'; 
-            }
-        }
-
-        async function handlePrabayarTrx(e) {
-            e.preventDefault();
-            const code = document.getElementById('prabayarCode').value;
-            const target = document.getElementById('prabayarTarget').value;
-            const phone = document.getElementById('prabayarWa').value;
-
-            try {
-                const res = await fetch('/api/atlantic/prabayar/transaksi', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code, target: target, phone: phone })
-                });
-                const data = await res.json();
-                alert(data.message || (data.success ? "Transaksi Prabayar Diproses!" : "Gagal"));
-            } catch(err) { alert("Gagal koneksi server."); }
-        }
-
-        async function handlePascabayarCek(e) {
-            e.preventDefault();
-            const code = document.getElementById('pascaCode').value;
-            const target = document.getElementById('pascaTarget').value;
-
-            try {
-                const res = await fetch('/api/atlantic/pascabayar/cek', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code, target: target })
-                });
-                const data = await res.json();
-                const div = document.getElementById('pascaResult');
-                div.classList.remove('hidden');
-                div.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            } catch(err) { alert("Gagal koneksi server."); }
-        }
-
-        async function handleTransferTrx(e) {
-            e.preventDefault();
-            const bank_code = document.getElementById('trfBankCode').value;
-            const account_no = document.getElementById('trfAccount').value;
-            const amount = Number(document.getElementById('trfAmount').value);
-            const phone = document.getElementById('trfWa').value;
-
-            try {
-                const res = await fetch('/api/atlantic/transfer', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bank_code: bank_code, account_no: account_no, amount: amount, phone: phone })
-                });
-                const data = await res.json();
-                alert(data.message || (data.success ? "Transfer Diproses!" : "Gagal"));
-            } catch(err) { alert("Gagal koneksi server."); }
-        }
-
-        async function handleDepositTrx(e) {
-            e.preventDefault();
-            const nominal = Number(document.getElementById('depNominal').value);
-            const method = document.getElementById('depMethod').value;
-
-            try {
-                const res = await fetch('/api/atlantic/deposit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nominal: nominal, method: method })
-                });
-                const data = await res.json();
-                const div = document.getElementById('depositResult');
-                div.classList.remove('hidden');
-                div.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            } catch(err) { alert("Gagal koneksi server."); }
-        }
-
-        function addToCart(id) {
-            const product = products.find(function(p) { return p.id === id; });
-            const item = cart.find(function(i) { return i.id === id; });
-            if (item) {
-                if (item.qty >= product.stock) return alert("Melebihi stok.");
-                item.qty++;
-            } else {
-                cart.push({ id: product.id, name: product.name, price: product.price, stock: product.stock, qty: 1 });
-            }
-            updateCart();
-            document.getElementById('cartModal').classList.remove('hidden');
-        }
-
-        function updateCart() {
-            const cartItems = document.getElementById('cartItems');
-            let total = 0;
-            let count = 0;
-            cartItems.innerHTML = '';
-            cart.forEach(function(item) {
-                total += item.price * item.qty;
-                count += item.qty;
-                cartItems.innerHTML += `
-                    <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl">
+                const products = await res.json();
+                if (!products.length) {
+                    grid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-400 py-6">Belum ada produk.</p>';
+                    return;
+                }
+                grid.innerHTML = products.map(p => `
+                    <div class="glass p-3 rounded-xl flex flex-col justify-between space-y-2">
                         <div>
-                            <h4 class="font-semibold text-white text-xs">${item.name}</h4>
-                            <p class="text-xs text-indigo-400 font-bold">Rp ${item.price.toLocaleString('id-ID')} x ${item.qty}</p>
+                            <img src="${p.image || 'https://via.placeholder.com/150'}" class="w-full h-24 object-cover rounded-lg mb-2">
+                            <h4 class="font-bold text-sm text-gray-200 line-clamp-1">${p.name}</h4>
+                            <p class="text-xs text-indigo-400 font-bold mt-1">Rp ${Number(p.price).toLocaleString('id-ID')}</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 bg-slate-800 rounded font-bold text-xs">-</button>
-                            <span class="text-xs font-bold text-white">${item.qty}</span>
-                            <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 bg-slate-800 rounded font-bold text-xs">+</button>
-                        </div>
+                        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="w-full py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-xs rounded-lg font-semibold transition mt-2">
+                            + Keranjang
+                        </button>
                     </div>
-                `;
-            });
-            document.getElementById('cartCount').innerText = count;
-            document.getElementById('cartTotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+                `).join('');
+            } catch(e) { grid.innerHTML = '<p class="col-span-2 text-center text-sm text-red-400 py-6">Gagal memuat produk.</p>'; }
+        }
+
+        function addToCart(id, name, price) {
+            const exist = cart.find(item => item.id === id);
+            if (exist) { exist.qty++; } else { cart.push({ id, name, price, qty: 1 }); }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.reduce((acc, curr) => acc + curr.qty, 0);
+            document.getElementById('cartItems').innerHTML = cart.map(item => `
+                <div class="flex justify-between items-center text-sm glass p-2 rounded-lg">
+                    <div>
+                        <p class="font-semibold">${item.name}</p>
+                        <p class="text-xs text-indigo-400">Rp ${Number(item.price).toLocaleString('id-ID')} x ${item.qty}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeQty(${item.id}, -1)" class="px-2 py-0.5 glass rounded">-</button>
+                        <span>${item.qty}</span>
+                        <button onclick="changeQty(${item.id}, 1)" class="px-2 py-0.5 glass rounded">+</button>
+                    </div>
+                </div>
+            `).join('');
+            const total = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+            document.getElementById('totalAmount').innerText = `Rp ${total.toLocaleString('id-ID')}`;
         }
 
         function changeQty(id, delta) {
-            const item = cart.find(function(i) { return i.id === id; });
+            const item = cart.find(i => i.id === id);
             if (item) {
                 item.qty += delta;
-                if (item.qty <= 0) {
-                    cart = cart.filter(function(i) { return i.id !== id; });
-                }
+                if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+                updateCartUI();
             }
-            updateCart();
         }
 
-        async function processPayment() {
-            const phone = document.getElementById('userPhone').value.trim();
-            if (cart.length === 0) return alert("Keranjang kosong!");
-            if (!phone) return alert("Masukkan nomor WhatsApp Anda!");
+        function toggleCartModal() { document.getElementById('cartModal').classList.toggle('hidden'); }
+        document.getElementById('cartBtn').addEventListener('click', toggleCartModal);
 
-            const payBtn = document.getElementById('payBtn');
-            payBtn.innerText = "Memproses...";
-            payBtn.disabled = true;
+        async function processCheckout() {
+            const phone = document.getElementById('custPhone').value.trim();
+            if (!phone) return alert("Nomor WhatsApp wajib diisi!");
+            if (cart.length === 0) return alert("Keranjang belanja kosong!");
+
+            const btn = document.getElementById('checkoutBtn');
+            btn.disabled = true;
+            btn.innerText = "Memproses...";
 
             try {
-                const response = await fetch('/api/create-transaction', {
+                const res = await fetch('/api/create-transaction', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cart: cart, phone: phone })
+                    body: JSON.stringify({ cart, phone })
                 });
+                const data = await res.json();
 
-                const data = await response.json();
-                if (data.success && data.payment_url) {
-                    window.location.href = data.payment_url;
+                if (data.success && data.qr_string) {
+                    toggleCartModal();
+                    showQrisModal(data.qr_string, data.totalAmount, data.transactionId);
                 } else {
-                    alert(data.message || "Gagal membuat transaksi.");
+                    alert(data.message || "Gagal membuat invoice QRIS.");
                 }
-            } catch (err) { alert("Gagal koneksi server."); }
-            finally { 
-                payBtn.innerText = "Bayar Sekarang (Casaku)"; 
-                payBtn.disabled = false; 
-            }
+            } catch(e) { alert("Terjadi kesalahan sistem."); }
+            finally { btn.disabled = false; btn.innerText = "Bayar Sekarang (QRIS)"; }
         }
 
-        document.getElementById('cartBtn').addEventListener('click', function() {
-            document.getElementById('cartModal').classList.remove('hidden');
-        });
-        document.getElementById('closeCartBtn').addEventListener('click', function() {
-            document.getElementById('cartModal').classList.add('hidden');
-        });
+        function showQrisModal(qrString, total, transactionId) {
+            document.getElementById('qrisTotal').innerText = `Rp ${Number(total).toLocaleString('id-ID')}`;
+            QRCode.toCanvas(document.getElementById('qrisCanvas'), qrString, { width: 220 }, function (e) { if (e) console.error(e); });
+            document.getElementById('qrisModal').classList.remove('hidden');
 
-        loadMusicConfig();
-        renderProducts();
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(() => checkPaymentStatus(transactionId), 3000);
+        }
+
+        async function checkPaymentStatus(transactionId) {
+            try {
+                const res = await fetch('/api/casaku/check-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transactionId })
+                });
+                const data = await res.json();
+                if (data.status && (data.data?.status === 'SUCCESS' || data.data?.status === 'PAID' || data.data?.status === 'paid')) {
+                    clearInterval(pollingInterval);
+                    alert("PEMBAYARAN BERHASIL! 🎉 Terima kasih telah berbelanja.");
+                    cart = [];
+                    updateCartUI();
+                    closeQrisModal();
+                    loadProducts();
+                }
+            } catch(e) {}
+        }
+
+        function closeQrisModal() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            document.getElementById('qrisModal').classList.add('hidden');
+        }
+
+        init();
     </script>
 </body>
 </html>
