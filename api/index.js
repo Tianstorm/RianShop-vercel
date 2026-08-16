@@ -5,26 +5,22 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-app.use(express.json());
+// Menaikkan limit payload agar muat upload file audio Base64
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 app.use(cors());
 
 // BASE URL APIs
 const ATLANTIC_BASE_URL = "https://atlantich2h.com/api";
 const CASAKU_BASE_URL = "https://api.casaku.id";
 
-// -------------------------------------------------------------
-// FUNKSI DATABASE TURSO HTTP REST API MURNI (SAFE-GUARD)
-// -------------------------------------------------------------
 async function queryTurso(sql, args = []) {
     const rawUrl = process.env.TURSO_DATABASE_URL || '';
     const token = process.env.TURSO_AUTH_TOKEN || '';
 
-    if (!rawUrl || !token) {
-        throw new Error("TURSO_DATABASE_URL atau TURSO_AUTH_TOKEN belum diatur di Vercel Environment Variables");
-    }
+    if (!rawUrl || !token) throw new Error("TURSO credentials not set!");
 
     const httpUrl = rawUrl.replace('libsql://', 'https://');
-
     const formattedArgs = args.map(arg => {
         if (typeof arg === 'number') return { type: "integer", value: String(arg) };
         if (arg === null || arg === undefined) return { type: "null" };
@@ -39,12 +35,7 @@ async function queryTurso(sql, args = []) {
                 { type: "close" }
             ]
         },
-        {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        }
+        { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
     );
 
     const result = response.data.results[0];
@@ -52,32 +43,27 @@ async function queryTurso(sql, args = []) {
 
     const execResult = result.response.result;
     const cols = execResult.cols.map(c => c.name);
-    const rows = execResult.rows.map(row => {
-        const obj = {};
-        row.forEach((cell, idx) => {
-            let val = cell.value;
-            if (cell.type === "integer") val = Number(val);
-            obj[cols[idx]] = val;
-        });
-        return obj;
-    });
-
-    return { rows };
+    return {
+        rows: execResult.rows.map(row => {
+            const obj = {};
+            row.forEach((cell, idx) => {
+                let val = cell.value;
+                if (cell.type === "integer") val = Number(val);
+                obj[cols[idx]] = val;
+            });
+            return obj;
+        })
+    };
 }
 
 const getSettings = async () => {
     try {
-        if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
-            return {};
-        }
+        if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) return {};
         const res = await queryTurso("SELECT * FROM settings");
         const config = {};
         if (res && res.rows) res.rows.forEach(r => config[r.key] = r.value);
         return config;
-    } catch (e) { 
-        console.error("Turso Settings Error:", e.message);
-        return {}; 
-    }
+    } catch (e) { return {}; }
 };
 
 const authenticateAdmin = (req, res, next) => {
@@ -93,9 +79,7 @@ const authenticateAdmin = (req, res, next) => {
 async function postAtlantic(endpoint, params) {
     const searchParams = new URLSearchParams();
     for (const key in params) {
-        if (params[key] !== undefined && params[key] !== null) {
-            searchParams.append(key, params[key]);
-        }
+        if (params[key] !== undefined && params[key] !== null) searchParams.append(key, params[key]);
     }
     return await axios.post(`${ATLANTIC_BASE_URL}${endpoint}`, searchParams, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -103,27 +87,27 @@ async function postAtlantic(endpoint, params) {
 }
 
 // -------------------------------------------------------------
-// PUBLIC & PRODUCTS ENDPOINTS
+// PUBLIC ENDPOINTS
 // -------------------------------------------------------------
 
 app.get('/api/settings/public', async (req, res) => {
     const config = await getSettings();
-    res.json({ bg_music: config.bg_music || '' });
+    let playlist = [];
+    try {
+        if (config.playlist_data) playlist = JSON.parse(config.playlist_data);
+    } catch(e) {}
+    res.json({ bg_music: config.bg_music || '', playlist: playlist });
 });
 
-// GET CATALOG PRODUCTS
 app.get('/api/products', async (req, res) => {
     try {
         const result = await queryTurso("SELECT * FROM products");
         res.json(result.rows || []);
-    } catch (err) { 
-        console.error("Products Load Error:", err.message);
-        res.status(500).json({ message: err.message }); 
-    }
+    } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
 // -------------------------------------------------------------
-// ATLANTIC H2H ENDPOINTS
+// ATLANTIC H2H & CASAKU ENDPOINTS
 // -------------------------------------------------------------
 
 app.get('/api/atlantic/profile', async (req, res) => {
@@ -132,10 +116,7 @@ app.get('/api/atlantic/profile', async (req, res) => {
     try {
         const response = await postAtlantic('/get-profile', { api_key: apiKey });
         res.json(response.data);
-    } catch (err) {
-        const errMsg = err.response?.data?.message || err.message;
-        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
-    }
+    } catch (err) { res.status(500).json({ status: false, message: err.message }); }
 });
 
 app.post('/api/atlantic/prabayar/layanan', async (req, res) => {
@@ -144,10 +125,7 @@ app.post('/api/atlantic/prabayar/layanan', async (req, res) => {
     try {
         const response = await postAtlantic('/layanan/prabayar', { api_key: apiKey });
         res.json(response.data);
-    } catch (err) {
-        const errMsg = err.response?.data?.message || err.message;
-        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
-    }
+    } catch (err) { res.status(500).json({ status: false, message: err.message }); }
 });
 
 app.post('/api/atlantic/prabayar/transaksi', async (req, res) => {
@@ -155,216 +133,64 @@ app.post('/api/atlantic/prabayar/transaksi', async (req, res) => {
     const config = await getSettings();
     const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
     const reffId = "REF-" + Date.now();
-
     try {
-        const response = await postAtlantic('/transaksi/create', {
-            api_key: apiKey,
-            code: code,
-            target: target,
-            reff_id: reffId
-        });
-
+        const response = await postAtlantic('/transaksi/create', { api_key: apiKey, code, target, reff_id: reffId });
         if (response.data && response.data.status) {
-            await queryTurso(
-                "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
-                [reffId, phone, `Prabayar: ${code} ke ${target}`, response.data.data?.price || 0, 'PENDING']
-            );
+            await queryTurso("INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
+                [reffId, phone, `Prabayar: ${code} ke ${target}`, response.data.data?.price || 0, 'PENDING']);
             res.json({ success: true, data: response.data.data });
-        } else {
-            res.status(400).json({ success: false, message: response.data?.message || "Transaksi H2H Gagal" });
-        }
-    } catch (err) {
-        const errMsg = err.response?.data?.message || err.message;
-        res.status(500).json({ success: false, message: `Atlantic: ${errMsg}` });
-    }
+        } else { res.status(400).json({ success: false, message: response.data?.message || "Gagal" }); }
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
-
-app.post('/api/atlantic/pascabayar/cek', async (req, res) => {
-    const { code, target } = req.body;
-    const config = await getSettings();
-    const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
-
-    try {
-        const response = await postAtlantic('/pascabayar/cek', {
-            api_key: apiKey,
-            code: code,
-            target: target
-        });
-        res.json(response.data);
-    } catch (err) {
-        const errMsg = err.response?.data?.message || err.message;
-        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
-    }
-});
-
-app.post('/api/atlantic/transfer', async (req, res) => {
-    const { bank_code, account_no, amount, phone } = req.body;
-    const config = await getSettings();
-    const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
-    const reffId = "TRF-" + Date.now();
-
-    try {
-        const response = await postAtlantic('/transfer/create', {
-            api_key: apiKey,
-            bank_code: bank_code,
-            account_no: account_no,
-            amount: amount,
-            reff_id: reffId
-        });
-
-        if (response.data && response.data.status) {
-            await queryTurso(
-                "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
-                [reffId, phone, `Transfer ${bank_code} ke ${account_no}`, amount, 'PENDING']
-            );
-            res.json({ success: true, data: response.data.data });
-        } else {
-            res.status(400).json({ success: false, message: response.data?.message || "Transfer Gagal" });
-        }
-    } catch (err) {
-        const errMsg = err.response?.data?.message || err.message;
-        res.status(500).json({ success: false, message: `Atlantic: ${errMsg}` });
-    }
-});
-
-app.post('/api/atlantic/deposit', async (req, res) => {
-    const { nominal, method } = req.body;
-    const config = await getSettings();
-    const apiKey = config.atlantic_key || process.env.ATLANTIC_API_KEY;
-
-    try {
-        const response = await postAtlantic('/deposit/create', {
-            api_key: apiKey,
-            nominal: nominal,
-            metode: method
-        });
-        res.json(response.data);
-    } catch (err) {
-        const errMsg = err.response?.data?.message || err.message;
-        res.status(500).json({ status: false, message: `Atlantic: ${errMsg}` });
-    }
-});
-
-// -------------------------------------------------------------
-// CASAKU GENERATE QRIS v2 ENDPOINTS
-// -------------------------------------------------------------
 
 app.post('/api/create-transaction', async (req, res) => {
     const { cart, phone } = req.body;
-    if (!cart || cart.length === 0 || !phone) {
-        return res.status(400).json({ message: "Data tidak lengkap" });
-    }
+    if (!cart || !phone) return res.status(400).json({ message: "Data tidak lengkap" });
 
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
     const merchantId = config.merchant_id || process.env.CASAKU_MERCHANT_ID;
 
-    if (!apiKey || !merchantId) {
-        return res.status(500).json({ message: "Casaku Error: License Key / Merchant ID belum diisi!" });
-    }
+    if (!apiKey || !merchantId) return res.status(500).json({ message: "Kredensial Casaku belum diisi!" });
 
     let totalAmount = 0, itemsName = [];
     for (let item of cart) {
         const prodRes = await queryTurso("SELECT * FROM products WHERE id = ?", [item.id]);
         const prod = prodRes.rows[0];
-        if (!prod || prod.stock < item.qty) {
-            return res.status(400).json({ message: `Stok produk ${item.name} habis!` });
-        }
+        if (!prod || prod.stock < item.qty) return res.status(400).json({ message: `Stok ${item.name} habis!` });
         totalAmount += prod.price * item.qty;
         itemsName.push(`${prod.name} (${item.qty}x)`);
     }
 
     try {
-        const response = await axios.post(
-            `${CASAKU_BASE_URL}/api/generate/v2/qris`,
-            {
-                qr_id: merchantId,
-                amount: totalAmount,
-                useUniqueCode: true,
-                packageIds: ["id.dana", "com.shopee.id"],
-                expiredInMinutes: 15,
-                qrType: "dynamic",
-                paymentMethod: "qris",
-                useQris: true,
-                prefix: "CSK"
-            },
-            {
-                headers: {
-                    'x-license-key': apiKey,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+        const response = await axios.post(`${CASAKU_BASE_URL}/api/generate/v2/qris`, {
+            qr_id: merchantId, amount: totalAmount, useUniqueCode: true,
+            packageIds: ["id.dana"], expiredInMinutes: 15, qrType: "dynamic", paymentMethod: "qris", useQris: true, prefix: "CSK"
+        }, { headers: { 'x-license-key': apiKey, 'Content-Type': 'application/json' } });
 
         if (response.data && (response.data.status === 200 || response.data.status === true)) {
             const resData = response.data.data || {};
-            const finalAmount = resData.totalAmount || resData.amount || totalAmount;
+            const finalAmount = resData.totalAmount || totalAmount;
             const transactionId = resData.transactionId || ("CSK-" + Date.now());
 
-            await queryTurso(
-                "INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
-                [transactionId, phone, itemsName.join(', '), finalAmount, 'PENDING']
-            );
+            await queryTurso("INSERT INTO transactions (order_id, customer_phone, description, amount, status) VALUES (?, ?, ?, ?, ?)",
+                [transactionId, phone, itemsName.join(', '), finalAmount, 'PENDING']);
 
-            res.json({
-                success: true,
-                transactionId: transactionId,
-                totalAmount: finalAmount,
-                qr_string: resData.qr_string || resData.qrString,
-                payment_url: resData.qr_string || resData.qrString
-            });
-        } else {
-            res.status(400).json({ message: response.data?.message || "Gagal membuat transaksi QRIS v2." });
-        }
-    } catch (error) {
-        const errMsg = error.response?.data?.message || error.message;
-        res.status(500).json({ message: `Casaku v2 Error: ${errMsg}` });
-    }
+            res.json({ success: true, transactionId, totalAmount: finalAmount, qr_string: resData.qr_string });
+        } else { res.status(400).json({ message: response.data?.message || "Gagal QRIS" }); }
+    } catch (error) { res.status(500).json({ message: error.message }); }
 });
 
 app.post('/api/casaku/check-status', async (req, res) => {
     const { transactionId } = req.body;
-    if (!transactionId) {
-        return res.status(400).json({ success: false, message: "transactionId wajib diisi" });
-    }
-
     const config = await getSettings();
     const apiKey = config.api_key || process.env.CASAKU_API_KEY;
-
     try {
-        const response = await axios.post(
-            `${CASAKU_BASE_URL}/api/generate/check-status`,
-            { transactionId: transactionId },
-            { headers: { 'x-license-key': apiKey, 'Content-Type': 'application/json' } }
-        );
+        const response = await axios.post(`${CASAKU_BASE_URL}/api/generate/check-status`, { transactionId }, {
+            headers: { 'x-license-key': apiKey, 'Content-Type': 'application/json' }
+        });
         res.json(response.data);
-    } catch (error) {
-        const errMsg = error.response?.data?.message || error.message;
-        res.status(500).json({ success: false, message: `Casaku Check Status Error: ${errMsg}` });
-    }
-});
-
-app.post('/api/casaku-callback', async (req, res) => {
-    const { order_id, transactionId, status, customer_phone, description, amount } = req.body;
-    const targetId = transactionId || order_id;
-
-    if (status === 'SUCCESS' || status === 'paid' || status === 'PAID') {
-        await queryTurso("UPDATE transactions SET status = 'SUCCESS' WHERE order_id = ?", [targetId]);
-        const productsRes = await queryTurso("SELECT * FROM products");
-        for (let p of productsRes.rows) {
-            if (description && description.includes(p.name)) {
-                await queryTurso("UPDATE products SET stock = MAX(0, stock - 1) WHERE id = ?", [p.id]);
-            }
-        }
-        try {
-            await axios.post('https://api.fonnte.com/send', {
-                target: customer_phone,
-                message: `*PEMBAYARAN SUCCESS!* 🎉\n\nNo. Order: ${targetId}\nProduk: ${description || 'Katalog RianShop'}\nTotal Bayar: Rp ${Number(amount).toLocaleString('id-ID')}\n\n*Terima kasih telah berbelanja di RianShop!*`
-            }, { headers: { 'Authorization': process.env.WA_GATEWAY_TOKEN } });
-        } catch (e) {}
-        return res.status(200).json({ status: 'OK' });
-    }
-    res.status(400).json({ status: 'FAILED' });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
 // -------------------------------------------------------------
@@ -383,21 +209,7 @@ app.post('/api/admin/login', (req, res) => {
 app.post('/api/admin/products', authenticateAdmin, async (req, res) => {
     try {
         const { name, price, stock, image } = req.body;
-        await queryTurso(
-            "INSERT INTO products (name, price, stock, image) VALUES (?, ?, ?, ?)",
-            [name, price, stock, image || '']
-        );
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
-});
-
-app.put('/api/admin/products/:id', authenticateAdmin, async (req, res) => {
-    try {
-        const { name, price, stock, image } = req.body;
-        await queryTurso(
-            "UPDATE products SET name = ?, price = ?, stock = ?, image = ? WHERE id = ?",
-            [name, price, stock, image || '', req.params.id]
-        );
+        await queryTurso("INSERT INTO products (name, price, stock, image) VALUES (?, ?, ?, ?)", [name, price, stock, image || '']);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
@@ -415,13 +227,14 @@ app.get('/api/admin/settings', authenticateAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
-    const { merchant_id, api_key, bg_music, atlantic_key } = req.body;
+    const { merchant_id, api_key, bg_music, atlantic_key, playlist_data } = req.body;
     if (merchant_id !== undefined) await queryTurso("INSERT OR REPLACE INTO settings (key, value) VALUES ('merchant_id', ?)", [merchant_id]);
     if (api_key !== undefined) await queryTurso("INSERT OR REPLACE INTO settings (key, value) VALUES ('api_key', ?)", [api_key]);
     if (bg_music !== undefined) await queryTurso("INSERT OR REPLACE INTO settings (key, value) VALUES ('bg_music', ?)", [bg_music]);
     if (atlantic_key !== undefined) await queryTurso("INSERT OR REPLACE INTO settings (key, value) VALUES ('atlantic_key', ?)", [atlantic_key]);
+    if (playlist_data !== undefined) await queryTurso("INSERT OR REPLACE INTO settings (key, value) VALUES ('playlist_data', ?)", [playlist_data]);
     res.json({ success: true, message: "Pengaturan Disimpan!" });
 });
 
 module.exports = app;
-        
+                                          
