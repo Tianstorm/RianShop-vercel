@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const apiKey = config.api_key || process.env.CASAKU_API_KEY;
 const axios = require('axios');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
